@@ -8,14 +8,14 @@ import {
   Text,
   TouchableOpacity,
   Image,
+  ScrollView,
 } from "react-native";
 import MapView, { Marker, Region } from "react-native-maps";
 import * as Location from "expo-location";
-import { SafeAreaView } from "react-native-safe-area-context";
 import markersData from "./markers.json";
 import { Linking } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import FilterForm from "./FilterForm";
+import RNPickerSelect from 'react-native-picker-select';
 
 interface UserLocation {
   latitude: number;
@@ -28,7 +28,7 @@ const App = () => {
       id: number;
       coordinate: { latitude: number; longitude: number };
       title: string;
-      description: string;
+      description: string[];
       product: string[];
       other_product: string[];
       service: string[];
@@ -51,7 +51,19 @@ const App = () => {
   const [selectedBlock, setSelectedBlock] = useState<number>(0);
   const mapRef = useRef<MapView>(null);
   const pointerPosition = useRef(new Animated.Value(0)).current;
+
   const [showFilterForm, setShowFilterForm] = useState(false);
+  const [filteredMarkers, setFilteredMarkers] = useState<any[]>([]);
+
+  // Filter options
+  const [productOptions, setProductOptions] = useState<string[]>([]);
+  const [descriptionOptions, setDescriptionOptions] = useState<string[]>([]);
+  const [serviceOptions, setServiceOptions] = useState<string[]>([]);
+
+  // Selected filter values
+  const [selectedProduct, setSelectedProduct] = useState<string>("");
+  const [selectedDescription, setSelectedDescription] = useState<string>("");
+  const [selectedService, setSelectedService] = useState<string>("");
 
   useEffect(() => {
     // Set markers from the JSON data
@@ -63,7 +75,7 @@ const App = () => {
           longitude: station.longitude,
         },
         title: station.title,
-        description: station.description.join(", "), // Join array of strings into a single string
+        description: station.description,
         product: station.product,
         other_product: station.other_product,
         service: station.service,
@@ -75,10 +87,15 @@ const App = () => {
       }))
     );
 
-  },
-  
-  
-  []);
+    // Extract unique values for filter options
+    const allProducts = markersData.STATION.flatMap(station => station.product);
+    const allDescriptions = markersData.STATION.flatMap(station => station.description);
+    const allServices = markersData.STATION.flatMap(station => station.service);
+
+    setProductOptions(Array.from(new Set(allProducts)));
+    setDescriptionOptions(Array.from(new Set(allDescriptions)));
+    setServiceOptions(Array.from(new Set(allServices)));
+  }, []);
 
   useEffect(() => {
     // Start watching user's location
@@ -151,39 +168,67 @@ const App = () => {
     setModalVisible(false);
   };
 
-  const renderBlockContent = () => {
-    if (!selectedMarker) return null;
+  const applyFilters = () => {
+    const filtered = markers.filter(marker => {
+      // Filter by product
+      if (selectedProduct && !marker.product.includes(selectedProduct)) {
+        return false;
+      }
+      // Filter by description
+      if (selectedDescription && !marker.description.includes(selectedDescription)) {
+        return false;
+      }
+      // Filter by service
+      if (selectedService && !marker.service.includes(selectedService)) {
+        return false;
+      }
+      return true;
+    });
+    setFilteredMarkers(filtered);
+    setShowFilterForm(false); // Hide filter form after applying filters
+  };
 
+  const renderBlockContent = (): React.ReactNode => {
     switch (selectedBlock) {
       case 0:
         return (
-          <Text style={styles.modalDescription}>
-            Description: {selectedMarker.description}
-          </Text>
+          <ScrollView>
+            {selectedMarker && selectedMarker.description.map((desc: string, index: number) => (
+              <Text key={index} style={styles.modalDescription}>{desc}</Text>
+            ))}
+          </ScrollView>
         );
       case 1:
         return (
-          <Text style={styles.modalDescription}>
-            Product: {selectedMarker.product.join(", ")}
-          </Text>
+          <ScrollView>
+            {selectedMarker && selectedMarker.product.map((prod: string, index: number) => (
+              <Text key={index} style={styles.modalDescription}>{prod}</Text>
+            ))}
+          </ScrollView>
         );
       case 2:
         return (
-          <Text style={styles.modalDescription}>
-            Other Product: {selectedMarker.other_product.join(", ")}
-          </Text>
+          <ScrollView>
+            {selectedMarker && selectedMarker.other_product.map((prod: string, index: number) => (
+              <Text key={index} style={styles.modalDescription}>{prod}</Text>
+            ))}
+          </ScrollView>
         );
       case 3:
         return (
-          <Text style={styles.modalDescription}>
-            Service: {selectedMarker.service.join(", ")}
-          </Text>
+          <ScrollView>
+            {selectedMarker && selectedMarker.service.map((serv: string, index: number) => (
+              <Text key={index} style={styles.modalDescription}>{serv}</Text>
+            ))}
+          </ScrollView>
         );
       case 4:
         return (
-          <Text style={styles.modalDescription}>
-            Promotion: {selectedMarker.promotion.join(", ")}
-          </Text>
+          <ScrollView>
+            {selectedMarker && selectedMarker.promotion.map((promo: string, index: number) => (
+              <Text key={index} style={styles.modalDescription}>{promo}</Text>
+            ))}
+          </ScrollView>
         );
       default:
         return null;
@@ -199,14 +244,22 @@ const App = () => {
         // Disable map's ability to follow user's location automatically
         showsUserLocation={false}
       >
-        {markers.map((marker) => (
-          <Marker
-            key={marker.id}
-            coordinate={marker.coordinate}
-            title={marker.title}
-            onPress={() => handleMarkerPress(marker)}
-          />
-        ))}
+        {filteredMarkers.length > 0
+          ? filteredMarkers.map((marker) => (
+            <Marker key={marker.id}
+              coordinate={marker.coordinate}
+              title={marker.title}
+              onPress={() => handleMarkerPress(marker)}
+            />
+          ))
+          : markers.map((marker) => (
+            <Marker
+              key={marker.id}
+              coordinate={marker.coordinate}
+              title={marker.title}
+              onPress={() => handleMarkerPress(marker)}
+            />
+          ))}
         {userLocation && (
           <Marker.Animated
             coordinate={{
@@ -255,20 +308,14 @@ const App = () => {
                 {selectedMarker.picture && (
                   <Image
                     source={{ uri: selectedMarker.picture }}
-                    style={styles.customImageStyle} // Merge custom style with existing style
+                    style={styles.customImageStyle} // Merge custom style with existing styles
                   />
                 )}
+
                 <Text style={styles.modalTitle}>{selectedMarker.title}</Text>
               </View>
-
               <View style={styles.blocksContainer}>
-                {[
-                  "Description",
-                  "Product",
-                  "Other Product",
-                  "Service",
-                  "Promotion",
-                ].map((block, index) => (
+                {["Description", "Product", "Other Product", "Service", "Promotion"].map((block, index) => (
                   <TouchableOpacity
                     key={index}
                     style={[
@@ -286,6 +333,7 @@ const App = () => {
                 style={styles.closeButton}
                 onPress={handleCloseModal}
               >
+                <Ionicons name="close" size={24} color="white" />
                 <Text style={styles.closeButtonText}>Close</Text>
               </TouchableOpacity>
             </View>
@@ -298,6 +346,55 @@ const App = () => {
         <Button title="My Location" onPress={findMyLocation} />
         <Button title="Filter 2" onPress={() => console.log("Filter 2")} />
       </View>
+
+      {/* Filter Form */}
+      {showFilterForm && (
+        <View style={styles.filterContainer}>
+          <View style={styles.filterGroup}>
+            <Text style={styles.filterTitle}>Filter by Product:</Text>
+            <RNPickerSelect
+              placeholder={{ label: 'Select Product', value: null }}
+              value={selectedProduct}
+              onValueChange={(value) => setSelectedProduct(value)}
+              items={productOptions.map(option => ({ label: option, value: option }))}
+              style={pickerSelectStyles}
+            />
+          </View>
+          <View style={styles.filterGroup}>
+            <Text style={styles.filterTitle}>Filter by Description:</Text>
+            <RNPickerSelect
+              placeholder={{ label: 'Select Description', value: null }}
+              value={selectedDescription}
+              onValueChange={(value) => setSelectedDescription(value)}
+              items={descriptionOptions.map(option => ({ label: option, value: option }))}
+              style={pickerSelectStyles}
+            />
+          </View>
+          <View style={styles.filterGroup}>
+            <Text style={styles.filterTitle}>Filter by Service:</Text>
+            <RNPickerSelect
+              placeholder={{ label: 'Select Service', value: null }}
+              value={selectedService}
+              onValueChange={(value) => setSelectedService(value)}
+              items={serviceOptions.map(option => ({ label: option, value: option }))}
+              style={pickerSelectStyles}
+            />
+          </View>
+          <TouchableOpacity
+            style={styles.filterButton}
+            onPress={applyFilters}
+          >
+            <Text style={styles.filterButtonText}>Apply Filters</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.filterCloseButton}
+            onPress={() => setShowFilterForm(false)}
+          >
+            <Text style={styles.filterButtonText}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
     </View>
   );
 };
@@ -307,6 +404,23 @@ function openGoogleMaps(lat: number, lon: number) {
   Linking.openURL(url);
 }
 
+const pickerSelectStyles = StyleSheet.create({
+  inputIOS: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    marginBottom: 20,
+    padding: 8,
+  },
+  inputAndroid: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    marginBottom: 20,
+    padding: 8,
+  },
+});
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -315,9 +429,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   customImageStyle: {
-    width: 400, // Customize width as needed
-    height: 200, // Customize height as needed
-    borderRadius: 20, // Add border radius for rounded corners
+    width: 400,
+    height: 200,
+    borderRadius: 20,
   },
   mapButton: {
     backgroundColor: "#4287f5",
@@ -327,10 +441,12 @@ const styles = StyleSheet.create({
     marginTop: 120,
     marginBottom: 20,
     alignItems: "center",
+    flexDirection: "row",
   },
   mapButtonText: {
     color: "#fff",
     fontSize: 16,
+    marginLeft: 10,
   },
   footer: {
     flexDirection: "row",
@@ -338,13 +454,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: "rgba(255, 255, 255, 1)", // Semi-transparent white background
+    backgroundColor: "rgba(255, 255, 255, 1)",
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    borderTopLeftRadius: 20, // Adjust the value as needed
-    borderTopRightRadius: 20, // Adjust the value as needed
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
   },
   modalContainer: {
     flex: 1,
@@ -397,15 +513,60 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     margin: 20,
     alignItems: "center",
+    flexDirection: "row",
   },
   closeButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    marginLeft: 10,
+  },
+  filterContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+
+  filterCloseButton: {
+    marginTop: 20,
+    alignSelf: "flex-end",
+    backgroundColor: "#4287f5",
+    borderRadius: 20,
+    padding: 5,
+  },
+  filterGroup: {
+    marginBottom: 20,
+  },
+  filterTitle: {
+    marginTop: 20,
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 2,
+  },
+  filterPicker: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    marginBottom: 20,
+  },
+  filterButton: {
+    backgroundColor: "#4287f5",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  filterButtonText: {
     color: "#fff",
     fontSize: 16,
   },
 });
 
 export default App;
-function filterMarkersByDescription(filterValue: string) {
-    throw new Error("Function not implemented.");
-}
+
 
