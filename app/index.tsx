@@ -347,15 +347,17 @@ const App = () => {
       >
         {filteredMarkers.length > 0
           ? filteredMarkers.map((marker) => (
-            <Marker
-              key={marker.id}
+            <Marker key={marker.id}
               coordinate={marker.coordinate}
               title={marker.title}
               onPress={() => handleMarkerPress(marker)}
-              image={markerImage}
-              anchor={{ x: 0.5, y: 0.5 }} // Set anchor to center
-              centerOffset={{ x: 0, y: -20 }} // Adjust vertical offset based on your marker image size
-            />
+              anchor={{ x: 0.5, y:0.5 }}
+              centerOffset={{ x: 0, y: -20 }} 
+            >
+              <View style={styles.markerWrapper}>
+                <Image source={markerImage} style={styles.markerImage} />
+              </View>
+            </Marker>
           ))
           : markers.map((marker) => (
             <Marker
@@ -363,12 +365,14 @@ const App = () => {
               coordinate={marker.coordinate}
               title={marker.title}
               onPress={() => handleMarkerPress(marker)}
-              image={markerImage}
-              anchor={{ x: 0.5, y: 0.5 }} // Set anchor to center
-              centerOffset={{ x: 0, y: -20 }} // Adjust vertical offset based on your marker image size
-            />
+              anchor={{ x: 0.5, y: 0.5 }}
+              centerOffset={{ x: 0, y: -20 }} 
+            >
+              <View style={styles.markerWrapper}>
+                <Image source={markerImage} style={styles.markerImage} />
+              </View>
+            </Marker>
           ))}
-
 
 
         {userLocation && (
@@ -575,12 +579,12 @@ const styles = StyleSheet.create({
   markerWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: 25, // adjust the size as needed
-    height: 41, // adjust the size as needed
+    width: 40, // adjust the size as needed
+    height:45, // adjust the size as needed
   },
   markerImage: {
-    width: 25, // adjust the size as needed
-    height: 41, // adjust the size as needed
+    width: 40, // adjust the size as needed
+    height: 45, // adjust the size as needed
     resizeMode: 'contain', // ensure the image is contained within the wrapper
   },
   mapButton: {
