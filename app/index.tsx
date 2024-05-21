@@ -12,10 +12,11 @@ import {
 } from "react-native";
 import MapView, { Marker, Region } from "react-native-maps";
 import * as Location from "expo-location";
-import markersData from "./markers.json";
+
 import { Linking } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import RNPickerSelect from 'react-native-picker-select';
+import CurrentLocationMarker from "./CurrentLocationMarker";
 
 interface UserLocation {
   latitude: number;
@@ -55,6 +56,28 @@ const App = () => {
   const [showFilterForm, setShowFilterForm] = useState(false);
   const [filteredMarkers, setFilteredMarkers] = useState<any[]>([]);
 
+
+  useEffect(() => {
+    fetchMarkers();
+  }, []);
+
+  const fetchMarkers = async () => {
+    try {
+      const response = await fetch('http://180.178.127.119:8282/API/data/markers.json');
+      const data = await response.json();
+
+      // Construct full image URLs
+      const markersWithImageUrls = data.map((marker: { picture: any; }) => ({
+        ...marker,
+        picture: `http://180.178.127.119:8282/API/picture/${marker.picture}`
+      }));
+
+      setMarkers(markersWithImageUrls);
+      setFilteredMarkers(markersWithImageUrls); // Assuming you want to initially show all markers
+    } catch (error) {
+
+    }
+  };
   // Filter options
   const [productOptions, setProductOptions] = useState<string[]>([]);
   const [descriptionOptions, setDescriptionOptions] = useState<string[]>([]);
@@ -83,39 +106,53 @@ const App = () => {
   }, [selectedProvince]);
 
   useEffect(() => {
-    // Set markers from the JSON data
-    setMarkers(
-      markersData.STATION.map((station) => ({
-        id: station.id,
-        coordinate: {
-          latitude: station.latitude,
-          longitude: station.longitude,
-        },
-        title: station.title,
-        description: station.description,
-        product: station.product,
-        other_product: station.other_product,
-        service: station.service,
-        province: station.province,
-        address: station.address,
-        status: station.status,
-        promotion: station.promotion,
-        picture: station.picture,
-      }))
-    );
+    const fetchMarkers = async () => {
+      try {
+        const response = await fetch('http://180.178.127.119:8282/API/data/markers.json');
+        const data = await response.json();
 
-    // Extract unique values for filter options
-    const allProducts = markersData.STATION.flatMap(station => station.product);
-    const allDescriptions = markersData.STATION.flatMap(station => station.description);
-    const allServices = markersData.STATION.flatMap(station => station.service);
-    const allProvinces = markersData.STATION.map(station => station.province);
-    const allTitle = markersData.STATION.map(station => station.title);
-    setProvinceOptions(Array.from(new Set(allProvinces)));
-    setProductOptions(Array.from(new Set(allProducts)));
-    setDescriptionOptions(Array.from(new Set(allDescriptions)));
-    setServiceOptions(Array.from(new Set(allServices)));
-    setTitleOptions(Array.from(new Set(allTitle)));
+        // Process the data to include the full image URL
+        const markersWithImageUrls = data.STATION.map((station: { id: any; latitude: any; longitude: any; title: any; description: any; product: any; other_product: any; service: any; province: any; address: any; status: any; promotion: any; picture: any; }) => ({
+          id: station.id,
+          coordinate: {
+            latitude: station.latitude,
+            longitude: station.longitude,
+          },
+          title: station.title,
+          description: station.description,
+          product: station.product,
+          other_product: station.other_product,
+          service: station.service,
+          province: station.province,
+          address: station.address,
+          status: station.status,
+          promotion: station.promotion,
+          picture: `http://180.178.127.119:8282/API/pictures/${station.picture}`, // Full image URL
+        }));
+
+        // Set the markers state with processed data
+        setMarkers(markersWithImageUrls);
+
+        // Extract unique values for filter options
+        const allProducts = markersWithImageUrls.flatMap((station: { product: any; }) => station.product);
+        const allDescriptions = markersWithImageUrls.flatMap((station: { description: any; }) => station.description);
+        const allServices = markersWithImageUrls.flatMap((station: { service: any; }) => station.service);
+        const allProvinces = markersWithImageUrls.map((station: { province: any; }) => station.province);
+        const allTitles = markersWithImageUrls.map((station: { title: any; }) => station.title);
+
+        setProvinceOptions(Array.from(new Set(allProvinces)));
+        setProductOptions(Array.from(new Set(allProducts)));
+        setDescriptionOptions(Array.from(new Set(allDescriptions)));
+        setServiceOptions(Array.from(new Set(allServices)));
+        setTitleOptions(Array.from(new Set(allTitles)));
+      } catch (error) {
+        console.error('Error fetching marker data:', error);
+      }
+    };
+
+    fetchMarkers();
   }, []);
+
 
   useEffect(() => {
     // Start watching user's location
@@ -165,8 +202,8 @@ const App = () => {
     const newRegion = {
       latitude: location.coords.latitude,
       longitude: location.coords.longitude,
-      latitudeDelta: 0.0922,
-      longitudeDelta: 0.0421,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
     };
 
     mapRef.current?.animateToRegion(newRegion, 500); // Adjust the duration as needed (500 milliseconds in this example)
@@ -201,8 +238,8 @@ const App = () => {
         mapRef.current?.animateToRegion({
           latitude: markerInProvince.coordinate.latitude,
           longitude: markerInProvince.coordinate.longitude,
-          latitudeDelta: 0.5, // Adjust as needed
-          longitudeDelta: 0.5, // Adjust as needed
+          latitudeDelta: 0.02, // Adjust as needed
+          longitudeDelta: 0.02, // Adjust as needed
         }, 500); // Adjust the duration as needed (500 milliseconds in this example)
       }
     }
@@ -229,31 +266,38 @@ const App = () => {
     }
 
     if (selectedTitle) {
+      // Find the selected marker by title
       const selectedMarker = markers.find((marker) => marker.title === selectedTitle);
       if (selectedMarker) {
-        const provinceOfTitle = selectedMarker.province;
-        filtered = filtered.filter((marker) => marker.province === provinceOfTitle);
+        // Zoom in on the selected marker
+        const region = {
+          latitude: selectedMarker.coordinate.latitude,
+          longitude: selectedMarker.coordinate.longitude,
+          latitudeDelta: 0.0, // Adjust as needed
+          longitudeDelta: 0.01, // Adjust as needed
+        };
+        mapRef.current?.animateToRegion(region, 500);
+        setRegion(region); // Update the region state to encompass the selected marker
       }
-    }
+    } else {
+      // Calculate the bounding region to encompass all markers
+      if (filtered.length > 0) {
+        const coordinates = filtered.map((marker) => marker.coordinate);
+        const minLatitude = Math.min(...coordinates.map((coord) => coord.latitude));
+        const maxLatitude = Math.max(...coordinates.map((coord) => coord.latitude));
+        const minLongitude = Math.min(...coordinates.map((coord) => coord.longitude));
+        const maxLongitude = Math.max(...coordinates.map((coord) => coord.longitude));
 
-    // Calculate the bounding region to encompass all markers
-    if (filtered.length > 0) {
-      const allMarkers = [...filtered, ...markers]; // Include all markers
-      const coordinates = allMarkers.map((marker) => marker.coordinate);
-      const minLatitude = Math.min(...coordinates.map((coord) => coord.latitude));
-      const maxLatitude = Math.max(...coordinates.map((coord) => coord.latitude));
-      const minLongitude = Math.min(...coordinates.map((coord) => coord.longitude));
-      const maxLongitude = Math.max(...coordinates.map((coord) => coord.longitude));
+        const region = {
+          latitude: (minLatitude + maxLatitude) / 2,
+          longitude: (minLongitude + maxLongitude) / 2,
+          latitudeDelta: maxLatitude - minLatitude + 1.1,
+          longitudeDelta: maxLongitude - minLongitude + 1.1,
+        };
 
-      const region = {
-        latitude: (minLatitude + maxLatitude) / 2,
-        longitude: (minLongitude + maxLongitude) / 2,
-        latitudeDelta: maxLatitude - minLatitude + 1.1,
-        longitudeDelta: maxLongitude - minLongitude + 1.1,
-      };
-
-      mapRef.current?.animateToRegion(region, 500);
-      setRegion(region); // Update the region state to encompass all markers
+        mapRef.current?.animateToRegion(region, 500);
+        setRegion(region); // Update the region state to encompass all markers
+      }
     }
 
     setFilteredMarkers(filtered);
@@ -351,8 +395,8 @@ const App = () => {
               coordinate={marker.coordinate}
               title={marker.title}
               onPress={() => handleMarkerPress(marker)}
-              anchor={{ x: 0.5, y:0.5 }}
-              centerOffset={{ x: 0, y: -20 }} 
+              anchor={{ x: 0.5, y: 0.5 }}
+              centerOffset={{ x: 0, y: -20 }}
             >
               <View style={styles.markerWrapper}>
                 <Image source={markerImage} style={styles.markerImage} />
@@ -366,7 +410,7 @@ const App = () => {
               title={marker.title}
               onPress={() => handleMarkerPress(marker)}
               anchor={{ x: 0.5, y: 0.5 }}
-              centerOffset={{ x: 0, y: -20 }} 
+              centerOffset={{ x: 0, y: -20 }}
             >
               <View style={styles.markerWrapper}>
                 <Image source={markerImage} style={styles.markerImage} />
@@ -374,27 +418,13 @@ const App = () => {
             </Marker>
           ))}
 
-
         {userLocation && (
-          <Marker.Animated
-            coordinate={{
-              latitude: userLocation.latitude,
-              longitude: userLocation.longitude,
-            }}
-            style={{
-              transform: [
-                {
-                  rotate: pointerPosition.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: ["0deg", "360deg"],
-                  }),
-                },
-              ],
-            }}
-            anchor={{ x: 0.5, y: 0.5 }}
-            pinColor="blue"
-          />
+          <Marker coordinate={userLocation} anchor={{ x: 0.5, y: 0.5 }} centerOffset={{ x: 0, y: -28 }}>
+            <CurrentLocationMarker coordinate={userLocation} />
+          </Marker>
         )}
+
+
       </MapView>
 
       {/* Modal */}
@@ -580,7 +610,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: 40, // adjust the size as needed
-    height:45, // adjust the size as needed
+    height: 45, // adjust the size as needed
   },
   markerImage: {
     width: 40, // adjust the size as needed
