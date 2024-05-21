@@ -208,20 +208,6 @@ const App = () => {
     }
   };
 
-  // JSX for selecting title
-  <View style={styles.filterGroup}>
-    <Text style={styles.filterTitle}>Filter by Title:</Text>
-    <RNPickerSelect
-      placeholder={{ label: 'Select Title', value: null }}
-      value={selectedTitle}
-      onValueChange={(value) => {
-        setSelectedTitle(value);
-        handleTitleSelection(value);
-      }}
-      items={titleOptions.map(option => ({ label: option, value: option }))}
-      style={pickerSelectStyles}
-    />
-  </View>
 
   const applyFilters = () => {
     let filtered = markers;
@@ -472,6 +458,7 @@ const App = () => {
               style={pickerSelectStyles}
             />
           </View>
+          
           <View style={styles.filterGroup}>
             <Text style={styles.filterTitle}>Filter by Title:</Text>
             <RNPickerSelect
@@ -485,7 +472,6 @@ const App = () => {
               style={pickerSelectStyles}
             />
           </View>
-
           <View style={styles.filterGroup}>
             <Text style={styles.filterTitle}>Filter by Product:</Text>
             <RNPickerSelect
