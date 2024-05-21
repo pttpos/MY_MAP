@@ -333,6 +333,9 @@ const App = () => {
     }
   };
 
+
+  const markerImage = require('../assets/picture/6.png'); // Use your custom marker image here
+
   return (
     <View style={styles.container}>
       <MapView
@@ -344,10 +347,14 @@ const App = () => {
       >
         {filteredMarkers.length > 0
           ? filteredMarkers.map((marker) => (
-            <Marker key={marker.id}
+            <Marker
+              key={marker.id}
               coordinate={marker.coordinate}
               title={marker.title}
               onPress={() => handleMarkerPress(marker)}
+              image={markerImage}
+              anchor={{ x: 0.5, y: 0.5 }} // Set anchor to center
+              centerOffset={{ x: 0, y: -20 }} // Adjust vertical offset based on your marker image size
             />
           ))
           : markers.map((marker) => (
@@ -356,8 +363,14 @@ const App = () => {
               coordinate={marker.coordinate}
               title={marker.title}
               onPress={() => handleMarkerPress(marker)}
+              image={markerImage}
+              anchor={{ x: 0.5, y: 0.5 }} // Set anchor to center
+              centerOffset={{ x: 0, y: -20 }} // Adjust vertical offset based on your marker image size
             />
           ))}
+
+
+
         {userLocation && (
           <Marker.Animated
             coordinate={{
@@ -458,7 +471,7 @@ const App = () => {
               style={pickerSelectStyles}
             />
           </View>
-          
+
           <View style={styles.filterGroup}>
             <Text style={styles.filterTitle}>Filter by Title:</Text>
             <RNPickerSelect
@@ -545,15 +558,30 @@ const pickerSelectStyles = StyleSheet.create({
 
 const styles = StyleSheet.create({
   container: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
     flex: 1,
   },
   map: {
+    ...StyleSheet.absoluteFillObject,
     flex: 1,
   },
   customImageStyle: {
     width: 400,
     height: 200,
     borderRadius: 20,
+  },
+  markerWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 25, // adjust the size as needed
+    height: 41, // adjust the size as needed
+  },
+  markerImage: {
+    width: 25, // adjust the size as needed
+    height: 41, // adjust the size as needed
+    resizeMode: 'contain', // ensure the image is contained within the wrapper
   },
   mapButton: {
     backgroundColor: "#4287f5",
@@ -575,7 +603,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 50,
     backgroundColor: "rgba(255, 255, 255, 1)",
     position: "absolute",
     bottom: 0,
