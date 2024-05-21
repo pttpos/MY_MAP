@@ -59,11 +59,28 @@ const App = () => {
   const [productOptions, setProductOptions] = useState<string[]>([]);
   const [descriptionOptions, setDescriptionOptions] = useState<string[]>([]);
   const [serviceOptions, setServiceOptions] = useState<string[]>([]);
+  const [provinceOptions, setProvinceOptions] = useState<string[]>([]);
+  const [titleOptions, setTitleOptions] = useState<string[]>([]);
 
   // Selected filter values
   const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [selectedDescription, setSelectedDescription] = useState<string>("");
   const [selectedService, setSelectedService] = useState<string>("");
+  const [selectedProvince, setSelectedProvince] = useState<string>("");
+  const [selectedTitle, setSelectedTitle] = useState<string>("");
+  // Function to update title options based on selected province
+  const updateTitleOptions = (selectedProvince: string) => {
+    const filteredTitles = markers
+      .filter(marker => marker.province === selectedProvince)
+      .flatMap(marker => marker.title);
+    const uniqueTitles = Array.from(new Set(filteredTitles));
+    setTitleOptions(uniqueTitles);
+  };
+  useEffect(() => {
+    if (selectedProvince) {
+      updateTitleOptions(selectedProvince);
+    }
+  }, [selectedProvince]);
 
   useEffect(() => {
     // Set markers from the JSON data
@@ -91,10 +108,13 @@ const App = () => {
     const allProducts = markersData.STATION.flatMap(station => station.product);
     const allDescriptions = markersData.STATION.flatMap(station => station.description);
     const allServices = markersData.STATION.flatMap(station => station.service);
-
+    const allProvinces = markersData.STATION.map(station => station.province);
+    const allTitle = markersData.STATION.map(station => station.title);
+    setProvinceOptions(Array.from(new Set(allProvinces)));
     setProductOptions(Array.from(new Set(allProducts)));
     setDescriptionOptions(Array.from(new Set(allDescriptions)));
     setServiceOptions(Array.from(new Set(allServices)));
+    setTitleOptions(Array.from(new Set(allTitle)));
   }, []);
 
   useEffect(() => {
@@ -167,26 +187,118 @@ const App = () => {
   const handleCloseModal = () => {
     setModalVisible(false);
   };
+  // Function to handle title selection
+  const handleTitleSelection = (title: string) => {
+    // Find the marker associated with the selected title
+    const markerWithTitle = markers.find(marker => marker.title === title);
+    if (markerWithTitle) {
+      // Get the province of the marker
+      const provinceOfTitle = markerWithTitle.province;
+      // Find the marker with the same province as the selected title
+      const markerInProvince = markers.find(marker => marker.province === provinceOfTitle);
+      if (markerInProvince) {
+        // Move and zoom the map to the province of the selected title
+        mapRef.current?.animateToRegion({
+          latitude: markerInProvince.coordinate.latitude,
+          longitude: markerInProvince.coordinate.longitude,
+          latitudeDelta: 0.5, // Adjust as needed
+          longitudeDelta: 0.5, // Adjust as needed
+        }, 500); // Adjust the duration as needed (500 milliseconds in this example)
+      }
+    }
+  };
+
+  // JSX for selecting title
+  <View style={styles.filterGroup}>
+    <Text style={styles.filterTitle}>Filter by Title:</Text>
+    <RNPickerSelect
+      placeholder={{ label: 'Select Title', value: null }}
+      value={selectedTitle}
+      onValueChange={(value) => {
+        setSelectedTitle(value);
+        handleTitleSelection(value);
+      }}
+      items={titleOptions.map(option => ({ label: option, value: option }))}
+      style={pickerSelectStyles}
+    />
+  </View>
 
   const applyFilters = () => {
-    const filtered = markers.filter(marker => {
-      // Filter by product
-      if (selectedProduct && !marker.product.includes(selectedProduct)) {
-        return false;
+    let filtered = markers;
+
+    if (selectedProduct) {
+      filtered = filtered.filter((marker) => marker.product.includes(selectedProduct));
+    }
+
+    if (selectedDescription) {
+      filtered = filtered.filter((marker) => marker.description.includes(selectedDescription));
+    }
+
+    if (selectedService) {
+      filtered = filtered.filter((marker) => marker.service.includes(selectedService));
+    }
+
+    if (selectedProvince) {
+      filtered = filtered.filter((marker) => marker.province === selectedProvince);
+    }
+
+    if (selectedTitle) {
+      const selectedMarker = markers.find((marker) => marker.title === selectedTitle);
+      if (selectedMarker) {
+        const provinceOfTitle = selectedMarker.province;
+        filtered = filtered.filter((marker) => marker.province === provinceOfTitle);
       }
-      // Filter by description
-      if (selectedDescription && !marker.description.includes(selectedDescription)) {
-        return false;
-      }
-      // Filter by service
-      if (selectedService && !marker.service.includes(selectedService)) {
-        return false;
-      }
-      return true;
-    });
+    }
+
+    // Calculate the bounding region to encompass all markers
+    if (filtered.length > 0) {
+      const allMarkers = [...filtered, ...markers]; // Include all markers
+      const coordinates = allMarkers.map((marker) => marker.coordinate);
+      const minLatitude = Math.min(...coordinates.map((coord) => coord.latitude));
+      const maxLatitude = Math.max(...coordinates.map((coord) => coord.latitude));
+      const minLongitude = Math.min(...coordinates.map((coord) => coord.longitude));
+      const maxLongitude = Math.max(...coordinates.map((coord) => coord.longitude));
+
+      const region = {
+        latitude: (minLatitude + maxLatitude) / 2,
+        longitude: (minLongitude + maxLongitude) / 2,
+        latitudeDelta: maxLatitude - minLatitude + 1.1,
+        longitudeDelta: maxLongitude - minLongitude + 1.1,
+      };
+
+      mapRef.current?.animateToRegion(region, 500);
+      setRegion(region); // Update the region state to encompass all markers
+    }
+
     setFilteredMarkers(filtered);
-    setShowFilterForm(false); // Hide filter form after applying filters
+    setShowFilterForm(false);
   };
+
+
+  useEffect(() => {
+    // Zoom in to marker's location when a title is selected
+    if (selectedTitle && selectedMarker) {
+      const { latitude, longitude } = selectedMarker.coordinate;
+      mapRef.current?.animateToRegion({
+        latitude,
+        longitude,
+        latitudeDelta: 0.02, // Adjust as needed
+        longitudeDelta: 0.02, // Adjust as needed
+      }, 500);
+    }
+  }, [selectedTitle]);
+
+  useEffect(() => {
+    if (selectedProvince) {
+      const filteredTitles = markers
+        .filter(marker => marker.province === selectedProvince)
+        .map(marker => marker.title);
+      setTitleOptions(Array.from(new Set(filteredTitles)));
+    } else {
+      setTitleOptions([]);
+    }
+  }, [selectedProvince]);
+
 
   const renderBlockContent = (): React.ReactNode => {
     switch (selectedBlock) {
@@ -350,6 +462,30 @@ const App = () => {
       {/* Filter Form */}
       {showFilterForm && (
         <View style={styles.filterContainer}>
+          <View style={styles.filterGroup}>
+            <Text style={styles.filterTitle}>Filter by Province:</Text>
+            <RNPickerSelect
+              placeholder={{ label: 'Select Province', value: null }}
+              value={selectedProvince}
+              onValueChange={(value) => setSelectedProvince(value)}
+              items={provinceOptions.map(option => ({ label: option, value: option }))}
+              style={pickerSelectStyles}
+            />
+          </View>
+          <View style={styles.filterGroup}>
+            <Text style={styles.filterTitle}>Filter by Title:</Text>
+            <RNPickerSelect
+              placeholder={{ label: 'Select Title', value: null }}
+              value={selectedTitle}
+              onValueChange={(value) => {
+                setSelectedTitle(value);
+                handleTitleSelection(value);
+              }}
+              items={titleOptions.map(option => ({ label: option, value: option }))}
+              style={pickerSelectStyles}
+            />
+          </View>
+
           <View style={styles.filterGroup}>
             <Text style={styles.filterTitle}>Filter by Product:</Text>
             <RNPickerSelect

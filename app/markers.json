@@ -19,9 +19,9 @@
       {
         "id": 602,
         "latitude": 11.670444444444444,
-        "longitude": 104.90508333333334,
+        "longitude": 108.90508333333334,
         "title": "PTT test",
-        "description": ["Amazon"],
+        "description": ["Amazon","7-Eleven"],
         "product": ["ULG 95", "ULR 91", "HSD"],
         "other_product": [""],
         "service": ["Fleet card", "ABA", "Cash"],
