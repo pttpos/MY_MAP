@@ -18,6 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import RNPickerSelect from 'react-native-picker-select';
 import CurrentLocationMarker from "./CurrentLocationMarker";
 import Footer from "./Footer";
+import Block, { IconName } from "./Block";
 
 
 
@@ -463,19 +464,26 @@ const App = () => {
                 <Text style={styles.modalTitle}>{selectedMarker.title}</Text>
               </View>
               <View style={styles.blocksContainer}>
-                {["Description", "Product", "Other Product", "Service", "Promotion"].map((block, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={[
-                      styles.block,
-                      selectedBlock === index && styles.selectedBlock,
-                    ]}
-                    onPress={() => setSelectedBlock(index)}
-                  >
-                    <Text style={styles.blockText}>{block}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+  <ScrollView horizontal={true}>
+    {[
+      
+      { text: "Description", icon: "information-circle-outline" },
+      { text: "Product", icon: "pricetags-outline" },
+      { text: "Other Product", icon: "cube-outline" },
+      { text: "Service", icon: "hammer-outline" },
+      { text: "Promotion", icon: "megaphone-outline" },
+    ].map((block, index) => (
+      <Block
+        key={index}
+        icon={block.icon as IconName} // Ensure the icon is cast to IconName
+        text={block.text}
+        isSelected={selectedBlock === index}
+        onPress={() => setSelectedBlock(index)}
+      />
+    ))}
+  </ScrollView>
+</View>
+
               <View style={styles.blockContent}>{renderBlockContent()}</View>
               <TouchableOpacity
                 style={styles.closeButton}
