@@ -1,5 +1,5 @@
 import React from "react";
-import { TouchableOpacity, Text, StyleSheet, View } from "react-native";
+import { TouchableOpacity, Text, StyleSheet, View, Dimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, {
   Easing,
@@ -53,10 +53,12 @@ const Block: React.FC<BlockProps> = ({ icon, text, isSelected, onPress }) => {
     onPress();
   };
 
+  const windowWidth = Dimensions.get("window").width;
+
   return (
     <GestureHandlerRootView>
       <TouchableOpacity
-        style={styles.block}
+        style={[styles.block, { width: windowWidth / 3 - 20 }]} // Adjust width based on screen width
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         onPress={onPress}
@@ -91,11 +93,11 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 0,
     },
     shadowOpacity: 0,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 0,
+    elevation: 0, // Set elevation to 0 to remove background shadow
   },
   content: {
     alignItems: "center",
@@ -131,6 +133,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
 });
+
 
 export default Block;
 export type { IconName };

@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  Dimensions,
 } from "react-native";
 import MapView, { Marker, Region } from "react-native-maps";
 import * as Location from "expo-location";
@@ -684,7 +685,7 @@ const pickerSelectStyles = StyleSheet.create({
     padding: 8,
   },
 });
-
+const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
@@ -697,9 +698,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   customImageStyle: {
-    width: 400,
-    height: 200,
-    borderRadius: 20,
+    width: width * 0.9, // Adjust width to 80% of screen width
+    height: height * 0.18, // Adjust height to 30% of screen height
+    borderRadius: 0.05 * Math.min(width, height), // Adjust borderRadius relative to the smaller of width and height
     position: "relative",
   },
   imageContainer: {
