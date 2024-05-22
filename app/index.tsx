@@ -15,12 +15,10 @@ import * as Location from "expo-location";
 
 import { Linking } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import RNPickerSelect from 'react-native-picker-select';
+import RNPickerSelect from "react-native-picker-select";
 import CurrentLocationMarker from "./CurrentLocationMarker";
 import Footer from "./Footer";
 import Block, { IconName } from "./Block";
-
-
 
 interface UserLocation {
   latitude: number;
@@ -60,27 +58,26 @@ const App = () => {
   const [showFilterForm, setShowFilterForm] = useState(false);
   const [filteredMarkers, setFilteredMarkers] = useState<any[]>([]);
 
-
   useEffect(() => {
     fetchMarkers();
   }, []);
 
   const fetchMarkers = async () => {
     try {
-      const response = await fetch('http://180.178.127.119:8282/API/data/markers.json');
+      const response = await fetch(
+        "http://180.178.127.119:8282/API/data/markers.json"
+      );
       const data = await response.json();
 
       // Construct full image URLs
-      const markersWithImageUrls = data.map((marker: { picture: any; }) => ({
+      const markersWithImageUrls = data.map((marker: { picture: any }) => ({
         ...marker,
-        picture: `http://180.178.127.119:8282/API/picture/${marker.picture}`
+        picture: `http://180.178.127.119:8282/API/picture/${marker.picture}`,
       }));
 
       setMarkers(markersWithImageUrls);
       setFilteredMarkers(markersWithImageUrls); // Assuming you want to initially show all markers
-    } catch (error) {
-
-    }
+    } catch (error) {}
   };
   // Filter options
   const [productOptions, setProductOptions] = useState<string[]>([]);
@@ -98,8 +95,8 @@ const App = () => {
   // Function to update title options based on selected province
   const updateTitleOptions = (selectedProvince: string) => {
     const filteredTitles = markers
-      .filter(marker => marker.province === selectedProvince)
-      .flatMap(marker => marker.title);
+      .filter((marker) => marker.province === selectedProvince)
+      .flatMap((marker) => marker.title);
     const uniqueTitles = Array.from(new Set(filteredTitles));
     setTitleOptions(uniqueTitles);
   };
@@ -112,37 +109,65 @@ const App = () => {
   useEffect(() => {
     const fetchMarkers = async () => {
       try {
-        const response = await fetch('http://180.178.127.119:8282/API/data/markers.json');
+        const response = await fetch(
+          "http://180.178.127.119:8282/API/data/markers.json"
+        );
         const data = await response.json();
 
         // Process the data to include the full image URL
-        const markersWithImageUrls = data.STATION.map((station: { id: any; latitude: any; longitude: any; title: any; description: any; product: any; other_product: any; service: any; province: any; address: any; status: any; promotion: any; picture: any; }) => ({
-          id: station.id,
-          coordinate: {
-            latitude: parseFloat(station.latitude),  // Ensure latitude is a number
-            longitude: parseFloat(station.longitude),  // Ensure longitude is a number
-          },
-          title: station.title,
-          description: station.description,
-          product: station.product,
-          other_product: station.other_product,
-          service: station.service,
-          province: station.province,
-          address: station.address,
-          status: station.status,
-          promotion: station.promotion,
-          picture: `http://180.178.127.119:8282/API/pictures/${station.picture}`, // Full image URL
-        }));
+        const markersWithImageUrls = data.STATION.map(
+          (station: {
+            id: any;
+            latitude: any;
+            longitude: any;
+            title: any;
+            description: any;
+            product: any;
+            other_product: any;
+            service: any;
+            province: any;
+            address: any;
+            status: any;
+            promotion: any;
+            picture: any;
+          }) => ({
+            id: station.id,
+            coordinate: {
+              latitude: parseFloat(station.latitude), // Ensure latitude is a number
+              longitude: parseFloat(station.longitude), // Ensure longitude is a number
+            },
+            title: station.title,
+            description: station.description,
+            product: station.product,
+            other_product: station.other_product,
+            service: station.service,
+            province: station.province,
+            address: station.address,
+            status: station.status,
+            promotion: station.promotion,
+            picture: `http://180.178.127.119:8282/API/pictures/${station.picture}`, // Full image URL
+          })
+        );
 
         // Set the markers state with processed data
         setMarkers(markersWithImageUrls);
 
         // Extract unique values for filter options
-        const allProducts = markersWithImageUrls.flatMap((station: { product: any; }) => station.product);
-        const allDescriptions = markersWithImageUrls.flatMap((station: { description: any; }) => station.description);
-        const allServices = markersWithImageUrls.flatMap((station: { service: any; }) => station.service);
-        const allProvinces = markersWithImageUrls.map((station: { province: any; }) => station.province);
-        const allTitles = markersWithImageUrls.map((station: { title: any; }) => station.title);
+        const allProducts = markersWithImageUrls.flatMap(
+          (station: { product: any }) => station.product
+        );
+        const allDescriptions = markersWithImageUrls.flatMap(
+          (station: { description: any }) => station.description
+        );
+        const allServices = markersWithImageUrls.flatMap(
+          (station: { service: any }) => station.service
+        );
+        const allProvinces = markersWithImageUrls.map(
+          (station: { province: any }) => station.province
+        );
+        const allTitles = markersWithImageUrls.map(
+          (station: { title: any }) => station.title
+        );
 
         setProvinceOptions(Array.from(new Set(allProvinces)));
         setProductOptions(Array.from(new Set(allProducts)));
@@ -150,13 +175,12 @@ const App = () => {
         setServiceOptions(Array.from(new Set(allServices)));
         setTitleOptions(Array.from(new Set(allTitles)));
       } catch (error) {
-        console.error('Error fetching marker data:', error);
+        console.error("Error fetching marker data:", error);
       }
     };
 
     fetchMarkers();
   }, []);
-
 
   useEffect(() => {
     const startWatchingLocation = async () => {
@@ -213,7 +237,6 @@ const App = () => {
     }).start();
   };
 
-
   const handleMarkerPress = (marker: any) => {
     setRegion({
       latitude: marker.coordinate.latitude,
@@ -231,47 +254,61 @@ const App = () => {
   // Function to handle title selection
   const handleTitleSelection = (title: string) => {
     // Find the marker associated with the selected title
-    const markerWithTitle = markers.find(marker => marker.title === title);
+    const markerWithTitle = markers.find((marker) => marker.title === title);
     if (markerWithTitle) {
       // Get the province of the marker
       const provinceOfTitle = markerWithTitle.province;
       // Find the marker with the same province as the selected title
-      const markerInProvince = markers.find(marker => marker.province === provinceOfTitle);
+      const markerInProvince = markers.find(
+        (marker) => marker.province === provinceOfTitle
+      );
       if (markerInProvince) {
         // Move and zoom the map to the province of the selected title
-        mapRef.current?.animateToRegion({
-          latitude: markerInProvince.coordinate.latitude,
-          longitude: markerInProvince.coordinate.longitude,
-          latitudeDelta: 0.02, // Adjust as needed
-          longitudeDelta: 0.02, // Adjust as needed
-        }, 500); // Adjust the duration as needed (500 milliseconds in this example)
+        mapRef.current?.animateToRegion(
+          {
+            latitude: markerInProvince.coordinate.latitude,
+            longitude: markerInProvince.coordinate.longitude,
+            latitudeDelta: 0.02, // Adjust as needed
+            longitudeDelta: 0.02, // Adjust as needed
+          },
+          500
+        ); // Adjust the duration as needed (500 milliseconds in this example)
       }
     }
   };
-
 
   const applyFilters = () => {
     let filtered = markers;
 
     if (selectedProduct) {
-      filtered = filtered.filter((marker) => marker.product.includes(selectedProduct));
+      filtered = filtered.filter((marker) =>
+        marker.product.includes(selectedProduct)
+      );
     }
 
     if (selectedDescription) {
-      filtered = filtered.filter((marker) => marker.description.includes(selectedDescription));
+      filtered = filtered.filter((marker) =>
+        marker.description.includes(selectedDescription)
+      );
     }
 
     if (selectedService) {
-      filtered = filtered.filter((marker) => marker.service.includes(selectedService));
+      filtered = filtered.filter((marker) =>
+        marker.service.includes(selectedService)
+      );
     }
 
     if (selectedProvince) {
-      filtered = filtered.filter((marker) => marker.province === selectedProvince);
+      filtered = filtered.filter(
+        (marker) => marker.province === selectedProvince
+      );
     }
 
     if (selectedTitle) {
       // Find the selected marker by title
-      const selectedMarker = markers.find((marker) => marker.title === selectedTitle);
+      const selectedMarker = markers.find(
+        (marker) => marker.title === selectedTitle
+      );
       if (selectedMarker) {
         // Zoom in on the selected marker
         const region = {
@@ -287,10 +324,18 @@ const App = () => {
       // Calculate the bounding region to encompass all markers
       if (filtered.length > 0) {
         const coordinates = filtered.map((marker) => marker.coordinate);
-        const minLatitude = Math.min(...coordinates.map((coord) => coord.latitude));
-        const maxLatitude = Math.max(...coordinates.map((coord) => coord.latitude));
-        const minLongitude = Math.min(...coordinates.map((coord) => coord.longitude));
-        const maxLongitude = Math.max(...coordinates.map((coord) => coord.longitude));
+        const minLatitude = Math.min(
+          ...coordinates.map((coord) => coord.latitude)
+        );
+        const maxLatitude = Math.max(
+          ...coordinates.map((coord) => coord.latitude)
+        );
+        const minLongitude = Math.min(
+          ...coordinates.map((coord) => coord.longitude)
+        );
+        const maxLongitude = Math.max(
+          ...coordinates.map((coord) => coord.longitude)
+        );
 
         const region = {
           latitude: (minLatitude + maxLatitude) / 2,
@@ -308,72 +353,90 @@ const App = () => {
     setShowFilterForm(false);
   };
 
-
   useEffect(() => {
     // Zoom in to marker's location when a title is selected
     if (selectedTitle && selectedMarker) {
       const { latitude, longitude } = selectedMarker.coordinate;
-      mapRef.current?.animateToRegion({
-        latitude,
-        longitude,
-        latitudeDelta: 0.02, // Adjust as needed
-        longitudeDelta: 0.02, // Adjust as needed
-      }, 500);
+      mapRef.current?.animateToRegion(
+        {
+          latitude,
+          longitude,
+          latitudeDelta: 0.02, // Adjust as needed
+          longitudeDelta: 0.02, // Adjust as needed
+        },
+        500
+      );
     }
   }, [selectedTitle]);
 
   useEffect(() => {
     if (selectedProvince) {
       const filteredTitles = markers
-        .filter(marker => marker.province === selectedProvince)
-        .map(marker => marker.title);
+        .filter((marker) => marker.province === selectedProvince)
+        .map((marker) => marker.title);
       setTitleOptions(Array.from(new Set(filteredTitles)));
     } else {
       setTitleOptions([]);
     }
   }, [selectedProvince]);
 
-
   const renderBlockContent = (): React.ReactNode => {
     switch (selectedBlock) {
       case 0:
         return (
           <ScrollView>
-            {selectedMarker && selectedMarker.description.map((desc: string, index: number) => (
-              <Text key={index} style={styles.modalDescription}>{desc}</Text>
-            ))}
+            {selectedMarker &&
+              selectedMarker.description.map((desc: string, index: number) => (
+                <Text key={index} style={styles.modalDescription}>
+                  {desc}
+                </Text>
+              ))}
           </ScrollView>
         );
       case 1:
         return (
           <ScrollView>
-            {selectedMarker && selectedMarker.product.map((prod: string, index: number) => (
-              <Text key={index} style={styles.modalDescription}>{prod}</Text>
-            ))}
+            {selectedMarker &&
+              selectedMarker.product.map((prod: string, index: number) => (
+                <Text key={index} style={styles.modalDescription}>
+                  {prod}
+                </Text>
+              ))}
           </ScrollView>
         );
       case 2:
         return (
           <ScrollView>
-            {selectedMarker && selectedMarker.other_product.map((prod: string, index: number) => (
-              <Text key={index} style={styles.modalDescription}>{prod}</Text>
-            ))}
+            {selectedMarker &&
+              selectedMarker.other_product.map(
+                (prod: string, index: number) => (
+                  <Text key={index} style={styles.modalDescription}>
+                    {prod}
+                  </Text>
+                )
+              )}
           </ScrollView>
         );
       case 3:
         return (
           <ScrollView>
-            {selectedMarker && selectedMarker.service.map((serv: string, index: number) => (
-              <Text key={index} style={styles.modalDescription}>{serv}</Text>
-            ))}
+            {selectedMarker &&
+              selectedMarker.service.map((serv: string, index: number) => (
+                <Text key={index} style={styles.modalDescription}>
+                  {serv}
+                </Text>
+              ))}
           </ScrollView>
         );
       case 4:
         return (
           <ScrollView>
-            {selectedMarker && selectedMarker.promotion.map((promo: string, index: number) => (
-              <Text key={index} style={styles.modalDescription}>{promo}</Text>
-            ))}
+            {selectedMarker &&
+              selectedMarker.promotion.map((promo: string, index: number) => (
+                <Text key={index} style={styles.modalDescription}>
+                  {promo}
+                </Text>
+              ))}
           </ScrollView>
         );
       default:
@@ -381,8 +444,7 @@ const App = () => {
     }
   };
 
-
-  const markerImage = require('../assets/picture/6.png'); // Use your custom marker image here
+  const markerImage = require("../assets/picture/6.png"); // Use your custom marker image here
 
   return (
     <View style={styles.container}>
@@ -395,40 +457,43 @@ const App = () => {
       >
         {filteredMarkers.length > 0
           ? filteredMarkers.map((marker) => (
-            <Marker key={marker.id}
-              coordinate={marker.coordinate}
-              title={marker.title}
-              onPress={() => handleMarkerPress(marker)}
-              anchor={{ x: 0.5, y: 0.5 }}
-              centerOffset={{ x: 0, y: -20 }}
-            >
-              <View style={styles.markerWrapper}>
-                <Image source={markerImage} style={styles.markerImage} />
-              </View>
-            </Marker>
-          ))
+              <Marker
+                key={marker.id}
+                coordinate={marker.coordinate}
+                title={marker.title}
+                onPress={() => handleMarkerPress(marker)}
+                anchor={{ x: 0.5, y: 0.5 }}
+                centerOffset={{ x: 0, y: -20 }}
+              >
+                <View style={styles.markerWrapper}>
+                  <Image source={markerImage} style={styles.markerImage} />
+                </View>
+              </Marker>
+            ))
           : markers.map((marker) => (
-            <Marker
-              key={marker.id}
-              coordinate={marker.coordinate}
-              title={marker.title}
-              onPress={() => handleMarkerPress(marker)}
-              anchor={{ x: 0.5, y: 0.5 }}
-              centerOffset={{ x: 0, y: -20 }}
-            >
-              <View style={styles.markerWrapper}>
-                <Image source={markerImage} style={styles.markerImage} />
-              </View>
-            </Marker>
-          ))}
+              <Marker
+                key={marker.id}
+                coordinate={marker.coordinate}
+                title={marker.title}
+                onPress={() => handleMarkerPress(marker)}
+                anchor={{ x: 0.5, y: 0.5 }}
+                centerOffset={{ x: 0, y: -20 }}
+              >
+                <View style={styles.markerWrapper}>
+                  <Image source={markerImage} style={styles.markerImage} />
+                </View>
+              </Marker>
+            ))}
 
         {userLocation && (
-          <Marker coordinate={userLocation} anchor={{ x: 0.5, y: 0.5 }} centerOffset={{ x: 0, y: -1 }}>
+          <Marker
+            coordinate={userLocation}
+            anchor={{ x: 0.5, y: 0.5 }}
+            centerOffset={{ x: 0, y: -1 }}
+          >
             <CurrentLocationMarker coordinate={userLocation} />
           </Marker>
         )}
-
-
       </MapView>
 
       {/* Modal */}
@@ -464,25 +529,24 @@ const App = () => {
                 <Text style={styles.modalTitle}>{selectedMarker.title}</Text>
               </View>
               <View style={styles.blocksContainer}>
-  <ScrollView horizontal={true}>
-    {[
-      
-      { text: "Description", icon: "information-circle-outline" },
-      { text: "Product", icon: "pricetags-outline" },
-      { text: "Other Product", icon: "cube-outline" },
-      { text: "Service", icon: "hammer-outline" },
-      { text: "Promotion", icon: "megaphone-outline" },
-    ].map((block, index) => (
-      <Block
-        key={index}
-        icon={block.icon as IconName} // Ensure the icon is cast to IconName
-        text={block.text}
-        isSelected={selectedBlock === index}
-        onPress={() => setSelectedBlock(index)}
-      />
-    ))}
-  </ScrollView>
-</View>
+                <ScrollView horizontal={true}>
+                  {[
+                    { text: "Description", icon: "information-circle-outline" },
+                    { text: "Product", icon: "pricetags-outline" },
+                    { text: "Other Product", icon: "cube-outline" },
+                    { text: "Service", icon: "hammer-outline" },
+                    { text: "Promotion", icon: "megaphone-outline" },
+                  ].map((block, index) => (
+                    <Block
+                      key={index}
+                      icon={block.icon as IconName} // Ensure the icon is cast to IconName
+                      text={block.text}
+                      isSelected={selectedBlock === index}
+                      onPress={() => setSelectedBlock(index)}
+                    />
+                  ))}
+                </ScrollView>
+              </View>
 
               <View style={styles.blockContent}>{renderBlockContent()}</View>
               <TouchableOpacity
@@ -509,10 +573,13 @@ const App = () => {
           <View style={styles.filterGroup}>
             <Text style={styles.filterTitle}>Filter by Province:</Text>
             <RNPickerSelect
-              placeholder={{ label: 'Select Province', value: null }}
+              placeholder={{ label: "Select Province", value: null }}
               value={selectedProvince}
               onValueChange={(value) => setSelectedProvince(value)}
-              items={provinceOptions.map(option => ({ label: option, value: option }))}
+              items={provinceOptions.map((option) => ({
+                label: option,
+                value: option,
+              }))}
               style={pickerSelectStyles}
             />
           </View>
@@ -520,50 +587,59 @@ const App = () => {
           <View style={styles.filterGroup}>
             <Text style={styles.filterTitle}>Filter by Title:</Text>
             <RNPickerSelect
-              placeholder={{ label: 'Select Title', value: null }}
+              placeholder={{ label: "Select Title", value: null }}
               value={selectedTitle}
               onValueChange={(value) => {
                 setSelectedTitle(value);
                 handleTitleSelection(value);
               }}
-              items={titleOptions.map(option => ({ label: option, value: option }))}
+              items={titleOptions.map((option) => ({
+                label: option,
+                value: option,
+              }))}
               style={pickerSelectStyles}
             />
           </View>
           <View style={styles.filterGroup}>
             <Text style={styles.filterTitle}>Filter by Product:</Text>
             <RNPickerSelect
-              placeholder={{ label: 'Select Product', value: null }}
+              placeholder={{ label: "Select Product", value: null }}
               value={selectedProduct}
               onValueChange={(value) => setSelectedProduct(value)}
-              items={productOptions.map(option => ({ label: option, value: option }))}
+              items={productOptions.map((option) => ({
+                label: option,
+                value: option,
+              }))}
               style={pickerSelectStyles}
             />
           </View>
           <View style={styles.filterGroup}>
             <Text style={styles.filterTitle}>Filter by Description:</Text>
             <RNPickerSelect
-              placeholder={{ label: 'Select Description', value: null }}
+              placeholder={{ label: "Select Description", value: null }}
               value={selectedDescription}
               onValueChange={(value) => setSelectedDescription(value)}
-              items={descriptionOptions.map(option => ({ label: option, value: option }))}
+              items={descriptionOptions.map((option) => ({
+                label: option,
+                value: option,
+              }))}
               style={pickerSelectStyles}
             />
           </View>
           <View style={styles.filterGroup}>
             <Text style={styles.filterTitle}>Filter by Service:</Text>
             <RNPickerSelect
-              placeholder={{ label: 'Select Service', value: null }}
+              placeholder={{ label: "Select Service", value: null }}
               value={selectedService}
               onValueChange={(value) => setSelectedService(value)}
-              items={serviceOptions.map(option => ({ label: option, value: option }))}
+              items={serviceOptions.map((option) => ({
+                label: option,
+                value: option,
+              }))}
               style={pickerSelectStyles}
             />
           </View>
-          <TouchableOpacity
-            style={styles.filterButton}
-            onPress={applyFilters}
-          >
+          <TouchableOpacity style={styles.filterButton} onPress={applyFilters}>
             <Text style={styles.filterButtonText}>Apply Filters</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -574,7 +650,6 @@ const App = () => {
           </TouchableOpacity>
         </View>
       )}
-
     </View>
   );
 };
@@ -587,14 +662,14 @@ function openGoogleMaps(lat: number, lon: number) {
 const pickerSelectStyles = StyleSheet.create({
   inputIOS: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderRadius: 5,
     marginBottom: 20,
     padding: 8,
   },
   inputAndroid: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderRadius: 5,
     marginBottom: 20,
     padding: 8,
@@ -604,8 +679,8 @@ const pickerSelectStyles = StyleSheet.create({
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
+    justifyContent: "flex-end",
+    alignItems: "center",
     flex: 1,
   },
   map: {
@@ -618,15 +693,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   markerWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     width: 40, // adjust the size as needed
     height: 45, // adjust the size as needed
   },
   markerImage: {
     width: 40, // adjust the size as needed
     height: 45, // adjust the size as needed
-    resizeMode: 'contain', // ensure the image is contained within the wrapper
+    resizeMode: "contain", // ensure the image is contained within the wrapper
   },
   mapButton: {
     backgroundColor: "#4287f5",
@@ -780,5 +855,3 @@ const styles = StyleSheet.create({
 });
 
 export default App;
-
-
