@@ -115,8 +115,8 @@ const App = () => {
         const markersWithImageUrls = data.STATION.map((station: { id: any; latitude: any; longitude: any; title: any; description: any; product: any; other_product: any; service: any; province: any; address: any; status: any; promotion: any; picture: any; }) => ({
           id: station.id,
           coordinate: {
-            latitude: station.latitude,
-            longitude: station.longitude,
+            latitude: parseFloat(station.latitude),  // Ensure latitude is a number
+            longitude: parseFloat(station.longitude),  // Ensure longitude is a number
           },
           title: station.title,
           description: station.description,
@@ -419,7 +419,7 @@ const App = () => {
           ))}
 
         {userLocation && (
-          <Marker coordinate={userLocation} anchor={{ x: 0.5, y: 0.5 }} centerOffset={{ x: 0, y: -28 }}>
+          <Marker coordinate={userLocation} anchor={{ x: 0.5, y: 0.5 }} centerOffset={{ x: 0, y: -1 }}>
             <CurrentLocationMarker coordinate={userLocation} />
           </Marker>
         )}
