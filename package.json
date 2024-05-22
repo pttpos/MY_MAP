@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",
+    "@fortawesome/fontawesome-free": "^6.5.2",
     "@react-native-community/geolocation": "^3.2.1",
     "@react-native-community/masked-view": "^0.1.11",
     "@react-native-community/picker": "^1.8.1",

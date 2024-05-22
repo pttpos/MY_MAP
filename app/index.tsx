@@ -17,6 +17,9 @@ import { Linking } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import RNPickerSelect from 'react-native-picker-select';
 import CurrentLocationMarker from "./CurrentLocationMarker";
+import Footer from "./Footer";
+
+
 
 interface UserLocation {
   latitude: number;
@@ -155,7 +158,6 @@ const App = () => {
 
 
   useEffect(() => {
-    // Start watching user's location
     const startWatchingLocation = async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
@@ -163,7 +165,12 @@ const App = () => {
         return;
       }
 
-      const location = await Location.getCurrentPositionAsync({});
+      let location = await Location.getLastKnownPositionAsync({}); // Try to get last known position
+      if (!location) {
+        // If last known position not available, get current position
+        location = await Location.getCurrentPositionAsync({});
+      }
+
       const newRegion = {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
@@ -172,7 +179,6 @@ const App = () => {
       };
 
       mapRef.current?.animateToRegion(newRegion, 500); // Move and zoom to current location
-      setRegion(newRegion); // Update the region state immediately
       setUserLocation({
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
@@ -482,20 +488,13 @@ const App = () => {
           )}
         </View>
       </Modal>
-      <View style={styles.footer}>
-        <Button title="Filter 1" onPress={() => setShowFilterForm(true)} />
-        <Button title="My Location" onPress={() => {
-          if (mapRef.current && userLocation) {
-            mapRef.current.animateToRegion({
-              ...userLocation,
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
-            }, 1000);
-          }
-        }} />
-        <Button title="Filter 2" onPress={() => console.log("Filter 2")} />
-      </View>
 
+      {/* Footer */}
+      <Footer
+        setShowFilterForm={setShowFilterForm}
+        mapRef={mapRef}
+        userLocation={userLocation}
+      />
       {/* Filter Form */}
       {showFilterForm && (
         <View style={styles.filterContainer}>
@@ -649,6 +648,23 @@ const styles = StyleSheet.create({
     right: 0,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+  },
+  footerButton: {
+    marginBottom: 60,
+    alignItems: "center",
+    justifyContent: "center",
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "#ffffff",
+    shadowColor: "#000000",
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    elevation: 5,
   },
   modalContainer: {
     flex: 1,
