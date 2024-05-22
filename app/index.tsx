@@ -19,7 +19,7 @@ import RNPickerSelect from "react-native-picker-select";
 import CurrentLocationMarker from "./CurrentLocationMarker";
 import Footer from "./Footer";
 import Block, { IconName } from "./Block";
-
+import GoogleButton from './GoogleButton';
 interface UserLocation {
   latitude: number;
   longitude: number;
@@ -439,6 +439,16 @@ const App = () => {
               ))}
           </ScrollView>
         );
+      case 5:
+        return (
+          <ScrollView>
+            {selectedMarker && (
+              <Text style={styles.modalDescription}>
+                {selectedMarker.address}
+              </Text>
+            )}
+          </ScrollView>
+        );
       default:
         return null;
     }
@@ -507,27 +517,32 @@ const App = () => {
           {selectedMarker && (
             <View>
               <View style={styles.header}>
-                <TouchableOpacity
-                  style={styles.mapButton}
-                  onPress={() =>
-                    openGoogleMaps(
-                      selectedMarker.coordinate.latitude,
-                      selectedMarker.coordinate.longitude
-                    )
-                  }
-                >
-                  <Ionicons name="logo-google" size={24} color="white" />
-                </TouchableOpacity>
+                <View style={styles.logoAndButtonsContainer}>
+                <GoogleButton onPress={() => openGoogleMaps(selectedMarker.coordinate.latitude, selectedMarker.coordinate.longitude)} />
+
+                </View>
+                <View style={styles.logoAndCloseContainer}>
+                  <Image
+                    source={require("../assets/picture/logo_Station.png")} // Replace with your logo path
+                    style={[styles.headerImage, { marginRight: "28%" }]} // Adjust margin percentage as needed
+                  />
+                  <TouchableOpacity
+                    style={[styles.closeButton, { marginLeft: "28%" }]} // Adjust margin percentage as needed
+                    onPress={handleCloseModal}
+                  >
+                    <Ionicons name="close" size={24} color="white" />
+                  </TouchableOpacity>
+                </View>
 
                 {selectedMarker.picture && (
                   <Image
                     source={{ uri: selectedMarker.picture }}
-                    style={styles.customImageStyle} // Merge custom style with existing styles
+                    style={styles.customImageStyle}
                   />
                 )}
-
                 <Text style={styles.modalTitle}>{selectedMarker.title}</Text>
               </View>
+
               <View style={styles.blocksContainer}>
                 <ScrollView horizontal={true}>
                   {[
@@ -535,6 +550,7 @@ const App = () => {
                     { text: "Product", icon: "pricetags-outline" },
                     { text: "Other Product", icon: "cube-outline" },
                     { text: "Service", icon: "hammer-outline" },
+                    { text: "Promotion", icon: "megaphone-outline" },
                     { text: "Promotion", icon: "megaphone-outline" },
                   ].map((block, index) => (
                     <Block
@@ -549,13 +565,6 @@ const App = () => {
               </View>
 
               <View style={styles.blockContent}>{renderBlockContent()}</View>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={handleCloseModal}
-              >
-                <Ionicons name="close" size={24} color="white" />
-                <Text style={styles.closeButtonText}>Close</Text>
-              </TouchableOpacity>
             </View>
           )}
         </View>
@@ -691,25 +700,37 @@ const styles = StyleSheet.create({
     width: 400,
     height: 200,
     borderRadius: 20,
+    position: "relative",
+  },
+  imageContainer: {
+    position: "relative",
+  },
+  logoAndButtonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  logoAndCloseContainer: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   markerWrapper: {
     alignItems: "center",
     justifyContent: "center",
-    width: 40, // adjust the size as needed
-    height: 45, // adjust the size as needed
+    width: 40,
+    height: 45,
   },
   markerImage: {
-    width: 40, // adjust the size as needed
-    height: 45, // adjust the size as needed
-    resizeMode: "contain", // ensure the image is contained within the wrapper
+    width: 40,
+    height: 45,
+    resizeMode: "contain",
   },
   mapButton: {
     backgroundColor: "#4287f5",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 20,
-    marginTop: 120,
-    marginBottom: 20,
     alignItems: "center",
     flexDirection: "row",
   },
@@ -754,16 +775,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   header: {
+    marginTop: "30%", // Adjust as needed
     alignItems: "center",
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
   },
+
   headerImage: {
-    width: 100,
-    height: 100,
-    resizeMode: "cover",
-    borderRadius: 50,
+    width: "30%", // Adjust as needed
+    aspectRatio: 2.5, // Ensure the aspect ratio remains square
+    resizeMode: "contain", // Use 'contain' to maintain the image's aspect ratio and fit within the specified width and height
   },
   modalTitle: {
     fontSize: 20,
@@ -794,18 +816,17 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   closeButton: {
-    backgroundColor: "#4287f5",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    margin: 20,
+    backgroundColor: "red",
+    borderRadius: 20,
+    width: 40,
+    height: 40,
     alignItems: "center",
-    flexDirection: "row",
+    justifyContent: "center",
   },
   closeButtonText: {
-    color: "#fff",
+    color: "white",
     fontSize: 16,
-    marginLeft: 10,
+    fontWeight: "bold",
   },
   filterContainer: {
     position: "absolute",
@@ -818,7 +839,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
-
   filterCloseButton: {
     marginTop: 20,
     alignSelf: "flex-end",
