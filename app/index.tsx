@@ -163,6 +163,21 @@ const App = () => {
         return;
       }
 
+      const location = await Location.getCurrentPositionAsync({});
+      const newRegion = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      };
+
+      mapRef.current?.animateToRegion(newRegion, 500); // Move and zoom to current location
+      setRegion(newRegion); // Update the region state immediately
+      setUserLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+
       await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.High,
@@ -191,24 +206,6 @@ const App = () => {
     }).start();
   };
 
-  const findMyLocation = async () => {
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      console.error("Permission to access location was denied");
-      return;
-    }
-
-    let location = await Location.getCurrentPositionAsync({});
-    const newRegion = {
-      latitude: location.coords.latitude,
-      longitude: location.coords.longitude,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
-    };
-
-    mapRef.current?.animateToRegion(newRegion, 500); // Adjust the duration as needed (500 milliseconds in this example)
-    setRegion(newRegion); // Update the region state immediately
-  };
 
   const handleMarkerPress = (marker: any) => {
     setRegion({
@@ -485,10 +482,17 @@ const App = () => {
           )}
         </View>
       </Modal>
-      {/* Footer buttons */}
       <View style={styles.footer}>
         <Button title="Filter 1" onPress={() => setShowFilterForm(true)} />
-        <Button title="My Location" onPress={findMyLocation} />
+        <Button title="My Location" onPress={() => {
+          if (mapRef.current && userLocation) {
+            mapRef.current.animateToRegion({
+              ...userLocation,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            }, 1000);
+          }
+        }} />
         <Button title="Filter 2" onPress={() => console.log("Filter 2")} />
       </View>
 
