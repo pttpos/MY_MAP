@@ -87,7 +87,7 @@ const BlockImage: React.FC<BlockImageProps> = ({ selectedBlock, selectedMarker }
     blockTitle: {
       fontSize: 24,
       fontWeight: 'bold',
-      marginBottom: 10,
+      marginBottom: 20,
       color: '#333',
     },
     modalDescription: {
@@ -101,17 +101,17 @@ const BlockImage: React.FC<BlockImageProps> = ({ selectedBlock, selectedMarker }
       marginRight: 10,
       marginBottom: 5,
       resizeMode: 'contain',
-      borderRadius: 10,
+      borderRadius: 50,
       borderWidth: 0,
       borderColor: '#ccc',
     },
     otherProductImage: {
       width: 70,
       height: 70,
-      marginRight:0,
+      marginRight: 0,
       marginBottom: 5,
       resizeMode: 'contain',
-    
+
     },
     animatedButton: {
       padding: 10,
@@ -138,13 +138,14 @@ const BlockImage: React.FC<BlockImageProps> = ({ selectedBlock, selectedMarker }
     }).start();
   };
 
-  // Render the block content based on the selected block
-  switch (selectedBlock) {
-    case 0:
-      return (
-        <ScrollView horizontal>
-          <View style={styles.container}>
-            <Text style={styles.blockTitle}>Product</Text>
+// Render the block content based on the selected block
+switch (selectedBlock) {
+  case 0:
+    return (
+      <ScrollView>
+        <View style={styles.container}>
+          <Text style={styles.blockTitle}>Product</Text>
+          <ScrollView horizontal>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               {selectedMarker &&
                 selectedMarker.product.map((prod: string, index: number) => (
@@ -159,7 +160,9 @@ const BlockImage: React.FC<BlockImageProps> = ({ selectedBlock, selectedMarker }
                   </View>
                 ))}
             </View>
-            <Text style={styles.blockTitle}>Other Product</Text>
+          </ScrollView>
+          <Text style={styles.blockTitle}>Other Product</Text>
+          <ScrollView horizontal>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               {selectedMarker &&
                 selectedMarker.other_product.map((prod: string, index: number) => (
@@ -174,18 +177,20 @@ const BlockImage: React.FC<BlockImageProps> = ({ selectedBlock, selectedMarker }
                   </View>
                 ))}
             </View>
-          </View>
-        </ScrollView>
-      );
-    case 1:
-    case 2:
-    case 3:
-      // Assuming service, description, and promotion have images associated with them
-      const title = ['Service', 'Description', 'Promotion'][selectedBlock - 1];
-      return (
-        <ScrollView horizontal>
-          <View style={styles.container}>
-            <Text style={styles.blockTitle}>{title}</Text>
+          </ScrollView>
+        </View>
+      </ScrollView>
+    );
+  case 1:
+  case 2:
+  case 3:
+    // Assuming service, description, and promotion have images associated with them
+    const title = ['Service', 'Description', 'Promotion'][selectedBlock - 1];
+    return (
+      <ScrollView>
+        <View style={styles.container}>
+          <Text style={styles.blockTitle}>{title}</Text>
+          <ScrollView horizontal>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               {selectedMarker &&
                 selectedMarker[title.toLowerCase()].map((item: string, index: number) => (
@@ -202,34 +207,36 @@ const BlockImage: React.FC<BlockImageProps> = ({ selectedBlock, selectedMarker }
                   </View>
                 ))}
             </View>
-          </View>
-        </ScrollView>
-      );
-    case 4:
-      return (
-        <ScrollView>
-          <View style={styles.container}>
-            <Text style={styles.blockTitle}>Address</Text>
-            {selectedMarker && (
-              <Text style={styles.modalDescription}>
-                {selectedMarker.address}
-              </Text>
-            )}
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={styles.animatedButton}
-              onPress={handleButtonPress}>
-              <Animated.Text style={[styles.animatedButtonText, { opacity: buttonOpacity }]}>
-                Click Me!
-              </Animated.Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      );
-    default:
-     
+          </ScrollView>
+        </View>
+      </ScrollView>
+    );
+  case 4:
+    return (
+      <ScrollView>
+        <View style={styles.container}>
+          <Text style={styles.blockTitle}>Address</Text>
+          {selectedMarker && (
+            <Text style={styles.modalDescription}>
+              {selectedMarker.address}
+            </Text>
+          )}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={styles.animatedButton}
+            onPress={handleButtonPress}>
+            <Animated.Text style={[styles.animatedButtonText, { opacity: buttonOpacity }]}>
+              Click Me!
+            </Animated.Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    );
+  default:
     return null;
 }
+
+
 
 
 };
