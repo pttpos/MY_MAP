@@ -381,19 +381,6 @@ const App = () => {
       setTitleOptions([]);
     }
   }, [selectedProvince]);
-
-  // Dummy data for selectedMarker
-  const dummySelectedMarker = {
-    product: ["ULR 91", "ULG 95", "HSD"],
-    other_product: ["EV", "Onion"],
-    service: ["Cash", "ABA", "Fleet card"],
-    description: ["EV", "Onion"],
-    promotion: ["EV", "Onion"],
-    address: "123 Main Street",
-  };
-
-
-
   const markerImage = require("../assets/picture/6.png"); // Use your custom marker image here
   // Define an object to map product values to image URLs
 

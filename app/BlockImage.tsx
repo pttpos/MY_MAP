@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, Animated, Easing } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, Animated, Easing, Modal, TouchableWithoutFeedback } from 'react-native';
 
 interface BlockImageProps {
   selectedBlock: number;
@@ -28,8 +28,8 @@ interface PaymentImages {
 
 interface DescriptionImages {
   [key: string]: any;
-  "EV": any;
-  "Onion": any;
+  "Amazon": any;
+  "7-Eleven": any;
 }
 
 interface PromotionImages {
@@ -45,7 +45,9 @@ interface ImageData {
 }
 
 const BlockImage: React.FC<BlockImageProps> = ({ selectedBlock, selectedMarker }) => {
-  // Define your image data here
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<any>(null);
+
   const productImages: ProductImages = {
     "ULR 91": require("../assets/picture/ULR91.png"),
     "ULG 95": require("../assets/picture/ULG95.png"),
@@ -64,8 +66,8 @@ const BlockImage: React.FC<BlockImageProps> = ({ selectedBlock, selectedMarker }
   };
 
   const descriptionImages: DescriptionImages = {
-    "EV": require('../assets/picture/ev.png'),
-    "Onion": require('../assets/picture/onion.png'),
+    "Amazon": require('../assets/picture/amazon.png'),
+    "7-Eleven": require('../assets/picture/7eleven.png'),
   };
 
   const promotionImages: PromotionImages = {
@@ -79,7 +81,6 @@ const BlockImage: React.FC<BlockImageProps> = ({ selectedBlock, selectedMarker }
     promotion: promotionImages,
   };
 
-  // Define your styles here
   const styles = StyleSheet.create({
     container: {
       padding: 20,
@@ -111,7 +112,6 @@ const BlockImage: React.FC<BlockImageProps> = ({ selectedBlock, selectedMarker }
       marginRight: 0,
       marginBottom: 5,
       resizeMode: 'contain',
-
     },
     animatedButton: {
       padding: 10,
@@ -124,9 +124,19 @@ const BlockImage: React.FC<BlockImageProps> = ({ selectedBlock, selectedMarker }
       fontWeight: 'bold',
       textAlign: 'center',
     },
+    modalContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    },
+    modalImage: {
+      width: '90%',
+      height: '40%',
+      resizeMode: 'contain',
+    },
   });
 
-  // Animated button opacity animation
   const buttonOpacity = new Animated.Value(1);
 
   const handleButtonPress = () => {
@@ -138,107 +148,139 @@ const BlockImage: React.FC<BlockImageProps> = ({ selectedBlock, selectedMarker }
     }).start();
   };
 
-// Render the block content based on the selected block
-switch (selectedBlock) {
-  case 0:
-    return (
-      <ScrollView>
-        <View style={styles.container}>
-          <Text style={styles.blockTitle}>Product</Text>
-          <ScrollView horizontal>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              {selectedMarker &&
-                selectedMarker.product.map((prod: string, index: number) => (
-                  <View key={index} style={{ marginRight: 10 }}>
-                    <Text style={styles.modalDescription}>{prod}</Text>
-                    {productImages[prod] && (
-                      <Image
-                        source={productImages[prod]}
-                        style={styles.productImage}
-                      />
-                    )}
-                  </View>
-                ))}
-            </View>
-          </ScrollView>
-          <Text style={styles.blockTitle}>Other Product</Text>
-          <ScrollView horizontal>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              {selectedMarker &&
-                selectedMarker.other_product.map((prod: string, index: number) => (
-                  <View key={index} style={{ marginRight: 40 }}>
-                    <Text style={styles.modalDescription}>{prod}</Text>
-                    {otherProductImages[prod] && (
-                      <Image
-                        source={otherProductImages[prod]}
-                        style={styles.otherProductImage}
-                      />
-                    )}
-                  </View>
-                ))}
-            </View>
-          </ScrollView>
-        </View>
-      </ScrollView>
-    );
-  case 1:
-  case 2:
-  case 3:
-    // Assuming service, description, and promotion have images associated with them
-    const title = ['Service', 'Description', 'Promotion'][selectedBlock - 1];
-    return (
-      <ScrollView>
-        <View style={styles.container}>
-          <Text style={styles.blockTitle}>{title}</Text>
-          <ScrollView horizontal>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              {selectedMarker &&
-                selectedMarker[title.toLowerCase()].map((item: string, index: number) => (
-                  <View key={index} style={{ marginRight: 40 }}>
-                    <View style={{ alignItems: 'center' }}>
-                      <Text style={styles.modalDescription}>{item}</Text>
-                      {imageData[title.toLowerCase()][item] && (
-                        <Image
-                          source={imageData[title.toLowerCase()][item]}
-                          style={styles.otherProductImage}
-                        />
-                      )}
-                    </View>
-                  </View>
-                ))}
-            </View>
-          </ScrollView>
-        </View>
-      </ScrollView>
-    );
-  case 4:
-    return (
-      <ScrollView>
-        <View style={styles.container}>
-          <Text style={styles.blockTitle}>Address</Text>
-          {selectedMarker && (
-            <Text style={styles.modalDescription}>
-              {selectedMarker.address}
-            </Text>
+  const openImageModal = (image: any) => {
+    setSelectedImage(image);
+    setModalVisible(true);
+  };
+
+  const closeImageModal = () => {
+    setModalVisible(false);
+    setSelectedImage(null);
+  };
+
+  switch (selectedBlock) {
+    case 0:
+      return (
+        <ScrollView>
+          <View style={styles.container}>
+            <Text style={styles.blockTitle}>Product</Text>
+            <ScrollView horizontal>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {selectedMarker &&
+                  selectedMarker.product.map((prod: string, index: number) => (
+                    <TouchableOpacity key={index} onPress={() => openImageModal(productImages[prod])}>
+                      <View style={{ marginRight: 10 }}>
+                        <Text style={styles.modalDescription}>{prod}</Text>
+                        {productImages[prod] && (
+                          <Image
+                            source={productImages[prod]}
+                            style={styles.productImage}
+                          />
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+              </View>
+            </ScrollView>
+            <Text style={styles.blockTitle}>Other Product</Text>
+            <ScrollView horizontal>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {selectedMarker &&
+                  selectedMarker.other_product.map((prod: string, index: number) => (
+                    <TouchableOpacity key={index} onPress={() => openImageModal(otherProductImages[prod])}>
+                      <View style={{ marginRight: 40 }}>
+                        <Text style={styles.modalDescription}>{prod}</Text>
+                        {otherProductImages[prod] && (
+                          <Image
+                            source={otherProductImages[prod]}
+                            style={styles.otherProductImage}
+                          />
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+              </View>
+            </ScrollView>
+          </View>
+          {selectedImage && (
+            <Modal visible={modalVisible} transparent={true} animationType="fade">
+              <TouchableWithoutFeedback onPress={closeImageModal}>
+                <View style={styles.modalContainer}>
+                  <TouchableWithoutFeedback>
+                    <Image source={selectedImage} style={styles.modalImage} />
+                  </TouchableWithoutFeedback>
+                </View>
+              </TouchableWithoutFeedback>
+            </Modal>
           )}
-          <TouchableOpacity
-            activeOpacity={0.7}
-            style={styles.animatedButton}
-            onPress={handleButtonPress}>
-            <Animated.Text style={[styles.animatedButtonText, { opacity: buttonOpacity }]}>
-              Click Me!
-            </Animated.Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    );
-  default:
-    return null;
-}
-
-
-
-
+        </ScrollView>
+      );
+    case 1:
+    case 2:
+    case 3:
+      const title = ['Service', 'Description', 'Promotion'][selectedBlock - 1];
+      return (
+        <ScrollView>
+          <View style={styles.container}>
+            <Text style={styles.blockTitle}>{title}</Text>
+            <ScrollView horizontal>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {selectedMarker &&
+                  selectedMarker[title.toLowerCase()].map((item: string, index: number) => (
+                    <TouchableOpacity key={index} onPress={() => openImageModal(imageData[title.toLowerCase()][item])}>
+                      <View style={{ marginRight: 40 }}>
+                        <View style={{ alignItems: 'center' }}>
+                          <Text style={styles.modalDescription}>{item}</Text>
+                          {imageData[title.toLowerCase()][item] && (
+                            <Image
+                              source={imageData[title.toLowerCase()][item]}
+                              style={styles.otherProductImage}
+                            />
+                          )}
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+              </View>
+            </ScrollView>
+          </View>
+          {selectedImage && (
+            <Modal visible={modalVisible} transparent={true} animationType="fade">
+              <TouchableWithoutFeedback onPress={closeImageModal}>
+                <View style={styles.modalContainer}>
+                  <TouchableWithoutFeedback>
+                    <Image source={selectedImage} style={styles.modalImage} />
+                  </TouchableWithoutFeedback>
+                </View>
+              </TouchableWithoutFeedback>
+            </Modal>
+          )}
+        </ScrollView>
+      );
+    case 4:
+      return (
+        <ScrollView>
+          <View style={styles.container}>
+            <Text style={styles.blockTitle}>Address</Text>
+            {selectedMarker && (
+              <Text style={styles.modalDescription}>
+                {selectedMarker.address}
+              </Text>
+            )}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              style={styles.animatedButton}
+              onPress={handleButtonPress}>
+              <Animated.Text style={[styles.animatedButtonText, { opacity: buttonOpacity }]}>
+                Click Me!
+              </Animated.Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      );
+    default:
+      return null;
+  }
 };
 
 export default BlockImage;
