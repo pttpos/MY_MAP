@@ -22,6 +22,8 @@ import Footer from "./Footer";
 import Block, { IconName } from "./Block";
 import GoogleButton from "./GoogleButton";
 import BlockImage from './BlockImage'; // Import the BlockImage component
+import LayoutMapToggle from './LayoutMapToggle';
+
 interface UserLocation {
   latitude: number;
   longitude: number;
@@ -56,7 +58,7 @@ const App = () => {
   const [selectedBlock, setSelectedBlock] = useState<number>(0);
   const mapRef = useRef<MapView>(null);
   const pointerPosition = useRef(new Animated.Value(0)).current;
-
+  const [mapType, setMapType] = React.useState<'standard' | 'satellite'>('standard');
   const [showFilterForm, setShowFilterForm] = useState(false);
   const [filteredMarkers, setFilteredMarkers] = useState<any[]>([]);
 
@@ -390,7 +392,7 @@ const App = () => {
         ref={mapRef}
         style={styles.map}
         region={region}
-        // Disable map's ability to follow user's location automatically
+        mapType={mapType}
         showsUserLocation={false}
       >
         {filteredMarkers.length > 0
@@ -433,6 +435,8 @@ const App = () => {
           </Marker>
         )}
       </MapView>
+      {/* Toggle button for map type */}
+      <LayoutMapToggle mapType={mapType} setMapType={setMapType} />
 
       {/* Modal */}
       <Modal
