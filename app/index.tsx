@@ -394,7 +394,11 @@ const App = () => {
     "ULG 95": require("../assets/picture/ULG95.png"),
     "HSD": require("../assets/picture/HSD.png"),
   };
-
+  const otherProductImages: Record<string, any> = {
+    // Map product names to their respective image sources
+    "EV": require('../assets/picture/ev.png'),
+    "Onion": require('../assets/picture/onion.png'),
+  };
 
   const renderBlockContent = (): React.ReactNode => {
     switch (selectedBlock) {
@@ -418,17 +422,22 @@ const App = () => {
                   ))}
               </View>
               <Text style={styles.blockTitle}>Other Product</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                {selectedMarker &&
-                  selectedMarker.other_product.map(
-                    (prod: string, index: number) => (
-                      <View key={index} style={{ marginRight: 10 }}>
-                        <Text style={styles.modalDescription}>{prod}</Text>
-                        {/* Add image here if needed */}
-                      </View>
-                    )
-                  )}
-              </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {selectedMarker &&
+              selectedMarker.other_product.map(
+                (prod: string, index: number) => (
+                  <View key={index} style={{ marginRight: 40 }}>
+                    <Text style={styles.modalDescription}>{prod}</Text>
+                    {otherProductImages[prod] && (
+                      <Image
+                        source={otherProductImages[prod]}
+                        style={styles.Other_productImage}
+                      />
+                    )}
+                  </View>
+                )
+              )}
+          </View>
             </View>
           </ScrollView>
         );
@@ -923,6 +932,13 @@ const styles = StyleSheet.create({
     marginRight: 50, // Add space between product images
     marginBottom: 5,
 
+  },
+  Other_productImage: {
+    width:70, // Adjust the width as needed
+    height: 70, // Adjust the height as needed
+    marginRight: 10, // Add space between product images
+    marginBottom: 5,
+    resizeMode: 'contain', // Fit image within the container without cropping
   },
 
 });
