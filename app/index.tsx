@@ -21,6 +21,7 @@ import CurrentLocationMarker from "./CurrentLocationMarker";
 import Footer from "./Footer";
 import Block, { IconName } from "./Block";
 import GoogleButton from "./GoogleButton";
+import BlockImage from './BlockImage'; // Import the BlockImage component
 interface UserLocation {
   latitude: number;
   longitude: number;
@@ -381,117 +382,17 @@ const App = () => {
     }
   }, [selectedProvince]);
 
-
-  interface ProductImages {
-    [key: string]: any;
-    "ULR 91": any;
-    "ULG 95": any;
-    "HSD": any;
-  }
-
-  const productImages: ProductImages = {
-    "ULR 91": require("../assets/picture/ULR91.png"),
-    "ULG 95": require("../assets/picture/ULG95.png"),
-    "HSD": require("../assets/picture/HSD.png"),
-  };
-  const otherProductImages: Record<string, any> = {
-    // Map product names to their respective image sources
-    "EV": require('../assets/picture/ev.png'),
-    "Onion": require('../assets/picture/onion.png'),
+  // Dummy data for selectedMarker
+  const dummySelectedMarker = {
+    product: ["ULR 91", "ULG 95", "HSD"],
+    other_product: ["EV", "Onion"],
+    service: ["Cash", "ABA", "Fleet card"],
+    description: ["EV", "Onion"],
+    promotion: ["EV", "Onion"],
+    address: "123 Main Street",
   };
 
-  const renderBlockContent = (): React.ReactNode => {
-    switch (selectedBlock) {
-      case 0:
-        return (
-          <ScrollView horizontal>
-            <View>
-              <Text style={styles.blockTitle}>Product</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                {selectedMarker &&
-                  selectedMarker.product.map((prod: string, index: number) => (
-                    <View key={index} style={{ marginRight: 10 }}>
-                      <Text style={styles.modalDescription}>{prod}</Text>
-                      {productImages[prod] && (
-                        <Image
-                          source={productImages[prod]}
-                          style={styles.productImage}
-                        />
-                      )}
-                    </View>
-                  ))}
-              </View>
-              <Text style={styles.blockTitle}>Other Product</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            {selectedMarker &&
-              selectedMarker.other_product.map(
-                (prod: string, index: number) => (
-                  <View key={index} style={{ marginRight: 40 }}>
-                    <Text style={styles.modalDescription}>{prod}</Text>
-                    {otherProductImages[prod] && (
-                      <Image
-                        source={otherProductImages[prod]}
-                        style={styles.Other_productImage}
-                      />
-                    )}
-                  </View>
-                )
-              )}
-          </View>
-            </View>
-          </ScrollView>
-        );
-      case 1:
-        return (
-          <ScrollView>
-            <Text style={styles.blockTitle}>Service</Text>
-            {selectedMarker &&
-              selectedMarker.service.map((serv: string, index: number) => (
-                <Text key={index} style={styles.modalDescription}>
-                  {serv}
-                </Text>
-              ))}
-          </ScrollView>
-        );
-      case 2:
-        return (
-          <ScrollView>
-            <Text style={styles.blockTitle}>Description</Text>
-            {selectedMarker &&
-              selectedMarker.description.map((desc: string, index: number) => (
-                <Text key={index} style={styles.modalDescription}>
-                  {desc}
-                </Text>
-              ))}
-          </ScrollView>
-        );
-      case 3:
-        return (
-          <ScrollView>
-            <Text style={styles.blockTitle}>Promotion</Text>
-            {selectedMarker &&
-              selectedMarker.promotion.map((promo: string, index: number) => (
-                <Text key={index} style={styles.modalDescription}>
-                  {promo}
-                </Text>
-              ))}
-          </ScrollView>
-        );
-      case 4:
-        return (
-          <ScrollView>
-            <Text style={styles.blockTitle}>Address</Text>
-            {selectedMarker && (
-              <Text style={styles.modalDescription}>
-                {selectedMarker.address}
-              </Text>
-            )}
-          </ScrollView>
-        );
-      default:
-        return null;
-    }
-  };
+
 
   const markerImage = require("../assets/picture/6.png"); // Use your custom marker image here
   // Define an object to map product values to image URLs
@@ -609,7 +510,7 @@ const App = () => {
                 </ScrollView>
               </View>
 
-              <View style={styles.blockContent}>{renderBlockContent()}</View>
+              <BlockImage selectedBlock={selectedBlock} selectedMarker={selectedMarker} />
 
             </View>
           )}
@@ -934,7 +835,7 @@ const styles = StyleSheet.create({
 
   },
   Other_productImage: {
-    width:70, // Adjust the width as needed
+    width: 70, // Adjust the width as needed
     height: 70, // Adjust the height as needed
     marginRight: 10, // Add space between product images
     marginBottom: 5,
