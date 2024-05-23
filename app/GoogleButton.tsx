@@ -1,6 +1,5 @@
-// GoogleButton.tsx
 import React from 'react';
-import { TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { TouchableOpacity, Image, StyleSheet, Dimensions } from 'react-native';
 import Animated, { Easing, useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
 interface GoogleButtonProps {
@@ -18,7 +17,7 @@ const GoogleButton: React.FC<GoogleButtonProps> = ({ onPress }) => {
     borderWidth: borderWidth.value,
     backgroundColor: backgroundColor.value,
     borderColor: borderColor.value,
-    borderRadius: 100, // Make it a perfect circle by setting borderRadius to half of the width/height
+    borderRadius: 50, // Make the border rounded
   }));
 
   const handlePressIn = () => {
@@ -60,38 +59,35 @@ const GoogleButton: React.FC<GoogleButtonProps> = ({ onPress }) => {
     onPress();
   };
 
+  const { width, height } = Dimensions.get('window');
+
   return (
-    <Animated.View style={[styles.buttonContainer, animatedStyle]}>
-      <TouchableOpacity
-        style={styles.touchable}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-      >
+    <TouchableOpacity
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      onPress={onPress}
+    >
+      <Animated.View style={[styles.buttonContainer, animatedStyle]}>
         <Image
           source={require('../assets/picture/google_maps-logo_brandlogos.net_u3ev8.png')} // Ensure the path is correct
-          style={styles.logo}
+          style={[styles.logo, { width: width * 0.11, height: height * 0.05 }]}
         />
-      </TouchableOpacity>
-    </Animated.View>
+      </Animated.View>
+    </TouchableOpacity>
   );
 };
 
+export default GoogleButton;
+
 const styles = StyleSheet.create({
   buttonContainer: {
-    margin: 20,
-    overflow: 'hidden', // Ensure the content stays within the bounds of the circle
-  },
-  touchable: {
-    padding: 15,
+    margin: Dimensions.get('window').width * 0.01, // Margin set to 1% of screen width
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'transparent',
+    padding: Dimensions.get('window').width * 0.02, // Padding set to 2% of screen width
+    borderRadius: 50, // Make the border rounded
   },
   logo: {
-    width: 100, // Adjust the size as needed
-    height: 30, // Adjust the size as needed
     resizeMode: 'contain',
   },
 });
-
-export default GoogleButton;
