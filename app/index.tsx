@@ -481,7 +481,7 @@ const App = () => {
                 <ScrollView horizontal={true}>
                   {[
                     { text: "Product", icon: "water-outline" },
-                    { text: "Other Product", icon: "cube-outline" },
+                    { text: "Other Product", icon: "wallet-outline" },
                     { text: "Service", icon: "restaurant-outline" },
                     { text: "Promotion", icon: "megaphone-outline" },
                     { text: "Address", icon: "location-outline" },
