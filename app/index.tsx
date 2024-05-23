@@ -20,7 +20,7 @@ import RNPickerSelect from "react-native-picker-select";
 import CurrentLocationMarker from "./CurrentLocationMarker";
 import Footer from "./Footer";
 import Block, { IconName } from "./Block";
-import GoogleButton from './GoogleButton';
+import GoogleButton from "./GoogleButton";
 interface UserLocation {
   latitude: number;
   longitude: number;
@@ -78,7 +78,7 @@ const App = () => {
 
       setMarkers(markersWithImageUrls);
       setFilteredMarkers(markersWithImageUrls); // Assuming you want to initially show all markers
-    } catch (error) {}
+    } catch (error) { }
   };
   // Filter options
   const [productOptions, setProductOptions] = useState<string[]>([]);
@@ -381,46 +381,61 @@ const App = () => {
     }
   }, [selectedProvince]);
 
+
+  interface ProductImages {
+    [key: string]: any;
+    "ULR 91": any;
+    "ULG 95": any;
+    "HSD": any;
+  }
+
+  const productImages: ProductImages = {
+    "ULR 91": require("../assets/picture/ULR91.png"),
+    "ULG 95": require("../assets/picture/ULG95.png"),
+    "HSD": require("../assets/picture/HSD.png"),
+  };
+
+
   const renderBlockContent = (): React.ReactNode => {
     switch (selectedBlock) {
       case 0:
         return (
-          <ScrollView>
-            {selectedMarker &&
-              selectedMarker.description.map((desc: string, index: number) => (
-                <Text key={index} style={styles.modalDescription}>
-                  {desc}
-                </Text>
-              ))}
+          <ScrollView horizontal>
+            <View>
+              <Text style={styles.blockTitle}>Product</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {selectedMarker &&
+                  selectedMarker.product.map((prod: string, index: number) => (
+                    <View key={index} style={{ marginRight: 10 }}>
+                      <Text style={styles.modalDescription}>{prod}</Text>
+                      {productImages[prod] && (
+                        <Image
+                          source={productImages[prod]}
+                          style={styles.productImage}
+                        />
+                      )}
+                    </View>
+                  ))}
+              </View>
+              <Text style={styles.blockTitle}>Other Product</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {selectedMarker &&
+                  selectedMarker.other_product.map(
+                    (prod: string, index: number) => (
+                      <View key={index} style={{ marginRight: 10 }}>
+                        <Text style={styles.modalDescription}>{prod}</Text>
+                        {/* Add image here if needed */}
+                      </View>
+                    )
+                  )}
+              </View>
+            </View>
           </ScrollView>
         );
       case 1:
         return (
           <ScrollView>
-            {selectedMarker &&
-              selectedMarker.product.map((prod: string, index: number) => (
-                <Text key={index} style={styles.modalDescription}>
-                  {prod}
-                </Text>
-              ))}
-          </ScrollView>
-        );
-      case 2:
-        return (
-          <ScrollView>
-            {selectedMarker &&
-              selectedMarker.other_product.map(
-                (prod: string, index: number) => (
-                  <Text key={index} style={styles.modalDescription}>
-                    {prod}
-                  </Text>
-                )
-              )}
-          </ScrollView>
-        );
-      case 3:
-        return (
-          <ScrollView>
+            <Text style={styles.blockTitle}>Service</Text>
             {selectedMarker &&
               selectedMarker.service.map((serv: string, index: number) => (
                 <Text key={index} style={styles.modalDescription}>
@@ -429,9 +444,22 @@ const App = () => {
               ))}
           </ScrollView>
         );
-      case 4:
+      case 2:
         return (
           <ScrollView>
+            <Text style={styles.blockTitle}>Description</Text>
+            {selectedMarker &&
+              selectedMarker.description.map((desc: string, index: number) => (
+                <Text key={index} style={styles.modalDescription}>
+                  {desc}
+                </Text>
+              ))}
+          </ScrollView>
+        );
+      case 3:
+        return (
+          <ScrollView>
+            <Text style={styles.blockTitle}>Promotion</Text>
             {selectedMarker &&
               selectedMarker.promotion.map((promo: string, index: number) => (
                 <Text key={index} style={styles.modalDescription}>
@@ -440,9 +468,10 @@ const App = () => {
               ))}
           </ScrollView>
         );
-      case 5:
+      case 4:
         return (
           <ScrollView>
+            <Text style={styles.blockTitle}>Address</Text>
             {selectedMarker && (
               <Text style={styles.modalDescription}>
                 {selectedMarker.address}
@@ -456,6 +485,7 @@ const App = () => {
   };
 
   const markerImage = require("../assets/picture/6.png"); // Use your custom marker image here
+  // Define an object to map product values to image URLs
 
   return (
     <View style={styles.container}>
@@ -468,33 +498,33 @@ const App = () => {
       >
         {filteredMarkers.length > 0
           ? filteredMarkers.map((marker) => (
-              <Marker
-                key={marker.id}
-                coordinate={marker.coordinate}
-                title={marker.title}
-                onPress={() => handleMarkerPress(marker)}
-                anchor={{ x: 0.5, y: 0.5 }}
-                centerOffset={{ x: 0, y: -20 }}
-              >
-                <View style={styles.markerWrapper}>
-                  <Image source={markerImage} style={styles.markerImage} />
-                </View>
-              </Marker>
-            ))
+            <Marker
+              key={marker.id}
+              coordinate={marker.coordinate}
+              title={marker.title}
+              onPress={() => handleMarkerPress(marker)}
+              anchor={{ x: 0.5, y: 0.5 }}
+              centerOffset={{ x: 0, y: -20 }}
+            >
+              <View style={styles.markerWrapper}>
+                <Image source={markerImage} style={styles.markerImage} />
+              </View>
+            </Marker>
+          ))
           : markers.map((marker) => (
-              <Marker
-                key={marker.id}
-                coordinate={marker.coordinate}
-                title={marker.title}
-                onPress={() => handleMarkerPress(marker)}
-                anchor={{ x: 0.5, y: 0.5 }}
-                centerOffset={{ x: 0, y: -20 }}
-              >
-                <View style={styles.markerWrapper}>
-                  <Image source={markerImage} style={styles.markerImage} />
-                </View>
-              </Marker>
-            ))}
+            <Marker
+              key={marker.id}
+              coordinate={marker.coordinate}
+              title={marker.title}
+              onPress={() => handleMarkerPress(marker)}
+              anchor={{ x: 0.5, y: 0.5 }}
+              centerOffset={{ x: 0, y: -20 }}
+            >
+              <View style={styles.markerWrapper}>
+                <Image source={markerImage} style={styles.markerImage} />
+              </View>
+            </Marker>
+          ))}
 
         {userLocation && (
           <Marker
@@ -519,8 +549,14 @@ const App = () => {
             <View>
               <View style={styles.header}>
                 <View style={styles.logoAndButtonsContainer}>
-                <GoogleButton onPress={() => openGoogleMaps(selectedMarker.coordinate.latitude, selectedMarker.coordinate.longitude)} />
-
+                  <GoogleButton
+                    onPress={() =>
+                      openGoogleMaps(
+                        selectedMarker.coordinate.latitude,
+                        selectedMarker.coordinate.longitude
+                      )
+                    }
+                  />
                 </View>
                 <View style={styles.logoAndCloseContainer}>
                   <Image
@@ -547,12 +583,11 @@ const App = () => {
               <View style={styles.blocksContainer}>
                 <ScrollView horizontal={true}>
                   {[
-                    { text: "Description", icon: "information-circle-outline" },
-                    { text: "Product", icon: "pricetags-outline" },
+                    { text: "Product", icon: "water-outline" },
                     { text: "Other Product", icon: "cube-outline" },
-                    { text: "Service", icon: "hammer-outline" },
+                    { text: "Service", icon: "restaurant-outline" },
                     { text: "Promotion", icon: "megaphone-outline" },
-                    { text: "Promotion", icon: "megaphone-outline" },
+                    { text: "Address", icon: "location-outline" },
                   ].map((block, index) => (
                     <Block
                       key={index}
@@ -566,6 +601,7 @@ const App = () => {
               </View>
 
               <View style={styles.blockContent}>{renderBlockContent()}</View>
+
             </View>
           )}
         </View>
@@ -685,7 +721,7 @@ const pickerSelectStyles = StyleSheet.create({
     padding: 8,
   },
 });
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
@@ -873,6 +909,22 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
   },
+  // Add blockTitle style here
+  blockTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  productImage: {
+    width: 50, // Adjust the width as needed
+    height: 50, // Adjust the height as needed
+    borderRadius: 25, // Make the image round
+    marginRight: 50, // Add space between product images
+    marginBottom: 5,
+
+  },
+
 });
 
 export default App;
